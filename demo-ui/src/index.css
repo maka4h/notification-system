@@ -1,0 +1,139 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+}
+
+.notification-item {
+  border-left: 4px solid #ccc;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item.severity-info {
+  border-left-color: #0d6efd;
+}
+
+.notification-item.severity-warning {
+  border-left-color: #ffc107;
+}
+
+.notification-item.severity-error {
+  border-left-color: #dc3545;
+}
+
+.notification-item.severity-critical {
+  border-left-color: #6f42c1;
+}
+
+.notification-item .timestamp {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.notification-bell {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subscription-card {
+  margin-bottom: 15px;
+  border-left: 4px solid #6610f2;
+}
+
+.path-display {
+  font-family: monospace;
+  background-color: #f8f9fa;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.subscription-tree {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.subscription-tree .subscription-tree {
+  padding-left: 20px;
+}
+
+.badge.includes-children {
+  background-color: #20c997;
+}
+
+.subscription-item {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  background-color: white;
+}
+
+.subscription-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.subscription-button.subscribed {
+  background-color: #198754;
+  color: white;
+}
+
+.subscription-button.inherited {
+  background-color: #6c757d;
+  color: white;
+}
+
+.inherited-label {
+  font-size: 0.7rem;
+  display: block;
+  margin-top: -5px;
+}
+
+/* Hierarchical path display */
+.path-segment {
+  display: inline-block;
+  padding: 2px 4px;
+  background-color: #e9ecef;
+  border-radius: 3px;
+  margin-right: 3px;
+}
+
+.path-separator {
+  margin: 0 2px;
+  color: #6c757d;
+}
+
+/* Toast notification */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+}

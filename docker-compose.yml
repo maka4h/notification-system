@@ -1,0 +1,87 @@
+services:
+  # NATS server with JetStream and WebSocket support
+  nats:
+    image: nats:2.10.7-alpine
+    ports:
+      - "4222:4222"  # NATS client port
+      - "8222:8222"  # HTTP monitoring
+      - "9222:9222"  # WebSocket port
+    command: ["--config", "/etc/nats/nats.conf"]
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - nats-data:/data
+    networks:
+      - notification-network
+
+  # PostgreSQL with TimescaleDB
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - notification-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Notification service
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # API port
+    environment:
+      NATS_URL: nats://nats:4222
+      POSTGRES_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/notification_db
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    networks:
+      - notification-network
+
+  # Demo UI
+  demo-ui:
+    build:
+      context: ./demo-ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"  # Web UI
+    environment:
+      API_URL: http://notification-service:8000
+      NATS_WS_URL: ws://localhost:9222
+    depends_on:
+      - notification-service
+    networks:
+      - notification-network
+
+  # Event generator for testing
+  event-generator:
+    build:
+      context: ./event-generator
+      dockerfile: Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - nats
+    networks:
+      - notification-network
+
+networks:
+  notification-network:
+    driver: bridge
+
+volumes:
+  nats-data:
+  postgres-data:
