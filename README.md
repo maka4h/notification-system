@@ -1,104 +1,328 @@
-# Hierarchical Notification System
+# Notification System
 
-This project implements a hierarchical notification system with the following features:
+A real-time, hierarchical notification system built with FastAPI, NATS, PostgreSQL (TimescaleDB), and React. The system provides event-driven notifications with subscription management and supports hierarchical object paths for flexible notification routing.
 
-- Subscribe to objects at any level in a hierarchy
-- Automatically receive notifications for child objects
-- Real-time notification delivery via WebSockets
-- Persistent notification history
-- Filter and search through notifications
+## 🏗️ Architecture
 
-## Architecture
+The system consists of five main components:
 
-The system consists of the following components:
-
+- **NATS Server**: Message broker for event streaming with JetStream persistence
+- **PostgreSQL + TimescaleDB**: Database for storing notifications and subscriptions
 - **Notification Service**: FastAPI backend that processes events and manages subscriptions
-- **NATS Server**: Messaging system for event distribution and real-time notifications
-- **PostgreSQL with TimescaleDB**: Database for storing notifications and subscriptions
-- **Demo UI**: React application to demonstrate the notification system
-- **Event Generator**: Service that generates random events for testing
+- **Demo UI**: React frontend for managing subscriptions and viewing notifications
+- **Event Generator**: Simulates real-world events for testing and demonstration
 
-## Getting Started
+## ✨ Features
+
+- **Hierarchical Subscriptions**: Subscribe to specific paths or parent paths to receive child notifications
+- **Real-time Notifications**: Event-driven architecture with NATS streaming
+- **Smart Filtering**: Filter notifications by severity, event type, path, read status, and more
+- **System Monitoring**: View all system events for debugging and monitoring
+- **Responsive UI**: Modern React interface with Bootstrap styling
+- **Auto-refresh**: Real-time updates in the notification center and system log
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker
-- Docker Compose
+- Docker and Docker Compose
+- Git
 
 ### Running the System
 
-1. Clone this repository
-2. Navigate to the project directory
-3. Start the system with Docker Compose:
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd notification-system
+   ```
 
-```bash
-docker-compose up -d
-```
+2. **Start all services**:
+   ```bash
+   docker-compose up -d
+   ```
 
-4. Wait for all services to start (this may take a minute or two)
-5. Access the demo UI at: http://localhost:3000
+3. **Access the application**:
+   - **Demo UI**: http://localhost:3000
+   - **API Documentation**: http://localhost:8000/docs
+   - **NATS Monitoring**: http://localhost:8222
 
-### Testing the System
+4. **Stop the system**:
+   ```bash
+   docker-compose down
+   ```
 
-Once the system is running, you can test it with these steps:
+5. **Clean restart** (removes all data):
+   ```bash
+   docker-compose down -v
+   docker-compose build --no-cache
+   docker-compose up -d
+   ```
 
-1. Visit http://localhost:3000 to access the demo UI
-2. Go to the "Object Browser" to see the hierarchical structure
-3. Subscribe to some objects by clicking the Subscribe button
-4. The event generator will automatically generate random events
-5. You'll receive real-time notifications for subscribed objects and their children
-6. Check the "Notification Center" to see all notifications
-7. Go to "My Subscriptions" to manage your subscriptions
+## 📊 Services Overview
 
-## How Hierarchical Subscriptions Work
+### Notification Service (Port 8000)
+FastAPI backend that handles subscriptions, notifications, and event processing.
 
-The system implements a path-based hierarchy:
+### Demo UI (Port 3000)
+React frontend with the following pages:
+- **Dashboard**: Overview and quick access
+- **Object Browser**: Browse hierarchical object structure
+- **Subscription Manager**: Create and manage subscriptions
+- **Notification Center**: View and filter personal notifications
+- **System Log**: Monitor all system events (debugging)
 
-- Objects have paths like `/projects/project-a/tasks/task-1`
-- When you subscribe to `/projects/project-a`, you'll receive notifications for all tasks and other child objects
-- You can subscribe at any level of the hierarchy
-- The system efficiently checks subscription status by traversing the path hierarchy
+### NATS Server (Ports 4222, 8222, 9222)
+- **4222**: NATS client connections
+- **8222**: HTTP monitoring interface
+- **9222**: WebSocket connections
 
-## Development
+### PostgreSQL (Port 5432)
+TimescaleDB-enabled PostgreSQL for storing notifications and subscriptions.
 
-### API Endpoints
+### Event Generator
+Continuously generates sample events every 30 seconds for testing.
 
-The notification service exposes the following API endpoints:
+## 🔌 API Endpoints
 
-- `GET /notifications`: Get notifications with optional filtering
-- `POST /notifications/{notification_id}/read`: Mark a notification as read
-- `POST /subscriptions`: Create a subscription to a path
-- `GET /subscriptions`: Get all subscriptions
-- `DELETE /subscriptions/{subscription_id}`: Delete a subscription
-- `GET /subscriptions/check`: Check subscription status for a path
+### Notifications
 
-### Environment Variables
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/notifications` | Get user notifications with filtering |
+| `POST` | `/notifications/{id}/read` | Mark notification as read |
+| `GET` | `/system/notifications` | Get all system notifications (monitoring) |
 
-The following environment variables can be configured:
+**Notification Filters**:
+- `path`: Filter by object path
+- `event_type`: Filter by event type (created, updated, deleted, etc.)
+- `severity`: Filter by severity (info, warning, error, critical)
+- `from_date`/`to_date`: Date range filtering
+- `is_read`: Filter by read status
+- `search`: Text search in title/content
+- `limit`/`offset`: Pagination
 
-- `NATS_URL`: NATS server URL (default: `nats://nats:4222`)
-- `POSTGRES_URL`: PostgreSQL connection string
-- `LOG_LEVEL`: Logging level (default: `INFO`)
-- `NATS_WS_URL`: WebSocket URL for the frontend (default: `ws://localhost:9222`)
+### Subscriptions
 
-## Project Structure
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/subscriptions` | Create new subscription |
+| `GET` | `/subscriptions` | Get user subscriptions |
+| `DELETE` | `/subscriptions/{id}` | Delete subscription |
+| `GET` | `/subscriptions/check` | Check subscription status for path |
+
+**Subscription Parameters**:
+- `object_path`: Path to subscribe to (e.g., `/projects/project-a`)
+- `event_types`: List of event types to subscribe to
+- `severity_filter`: Minimum severity level
+
+### Health & Monitoring
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Service health check |
+| `GET` | `/docs` | API documentation (Swagger) |
+
+## 📁 Project Structure
 
 ```
 notification-system/
-├── docker-compose.yml           # Docker Compose configuration
-├── notification-service/        # Backend service
-│   ├── Dockerfile               # Dockerfile for the service
-│   ├── main.py                  # Main application code
-│   ├── models.py                # Database models
-│   ├── requirements.txt         # Python dependencies
-│   └── schemas.py               # Pydantic schemas
-├── demo-ui/                     # Frontend demo application
-│   ├── Dockerfile               # Dockerfile for the UI
-│   ├── package.json             # NPM package configuration
-│   ├── public/                  # Static assets
-│   └── src/                     # React application code
-└── event-generator/             # Test event generator
-    ├── Dockerfile               # Dockerfile for the generator
-    ├── generator.py             # Event generation script
-    └── requirements.txt         # Python dependencies
+├── docker-compose.yml          # Multi-service orchestration
+├── nats.conf                   # NATS server configuration
+├── README.md                   # This file
+├── demo-ui/                    # React frontend
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── public/
+│   └── src/
+│       ├── App.js             # Main app component
+│       ├── context/           # React context for notifications
+│       └── pages/             # UI pages
+├── event-generator/            # Event simulation service
+│   ├── Dockerfile
+│   ├── generator.py           # Event generation logic
+│   └── requirements.txt
+└── notification-service/       # FastAPI backend
+    ├── Dockerfile
+    ├── main.py                # Main API application
+    ├── models.py              # Database models
+    ├── schemas.py             # Pydantic schemas
+    └── requirements.txt
 ```
+
+## 🎯 Usage Examples
+
+### Creating a Subscription via API
+
+```bash
+curl -X POST "http://localhost:8000/subscriptions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "object_path": "/projects/project-a",
+    "event_types": ["created", "updated", "deleted"],
+    "severity_filter": "info"
+  }'
+```
+
+### Getting Notifications
+
+```bash
+# Get recent notifications
+curl "http://localhost:8000/notifications?limit=10"
+
+# Get only error notifications
+curl "http://localhost:8000/notifications?severity=error"
+
+# Search in notifications
+curl "http://localhost:8000/notifications?search=project-a"
+```
+
+### System Monitoring
+
+```bash
+# Get all system events (for debugging)
+curl "http://localhost:8000/system/notifications?limit=50"
+
+# Monitor specific path
+curl "http://localhost:8000/system/notifications?path=/projects/project-a"
+```
+
+## 🔄 Event Types
+
+The system supports the following event types:
+
+- `created`: New object created
+- `updated`: Object modified
+- `deleted`: Object removed
+- `commented`: Comment added
+- `status_changed`: Status updated
+- `assigned`: Object assigned to user
+- `completed`: Task/project completed
+- `error`: Error occurred
+- `warning`: Warning condition
+
+## 📊 Severity Levels
+
+- `info`: Informational events
+- `warning`: Warning conditions
+- `error`: Error conditions
+- `critical`: Critical failures
+
+## 🌲 Hierarchical Subscriptions
+
+The system supports hierarchical object paths where subscribing to a parent path automatically receives notifications for all child paths:
+
+```
+/projects/project-a              # Parent path
+├── /projects/project-a/tasks/task-1    # Child path
+├── /projects/project-a/tasks/task-2    # Child path
+└── /projects/project-a/documents/doc-1 # Child path
+```
+
+Subscribing to `/projects/project-a` will receive notifications for:
+- `/projects/project-a` (direct)
+- `/projects/project-a/tasks/task-1` (inherited)
+- `/projects/project-a/tasks/task-2` (inherited)
+- `/projects/project-a/documents/doc-1` (inherited)
+
+## 🔧 Configuration
+
+### Environment Variables
+
+**Notification Service**:
+- `NATS_URL`: NATS server URL (default: `nats://nats:4222`)
+- `POSTGRES_URL`: PostgreSQL connection string
+- `LOG_LEVEL`: Logging level (default: `INFO`)
+
+**Event Generator**:
+- `NATS_URL`: NATS server URL (default: `nats://nats:4222`)
+- `GENERATE_INTERVAL`: Event generation interval in seconds (default: `30`)
+
+### Database Schema
+
+The system uses two main tables:
+
+**notifications**:
+- `id`: Unique identifier
+- `user_id`: User identifier (or "system" for system events)
+- `title`: Notification title
+- `content`: Notification content
+- `object_path`: Hierarchical object path
+- `type`: Event type
+- `severity`: Severity level
+- `timestamp`: Creation timestamp
+- `is_read`: Read status
+- `subscription_id`: Associated subscription
+- `inherited`: Whether notification is inherited from parent path
+
+**notification_subscriptions**:
+- `id`: Unique identifier
+- `user_id`: User identifier
+- `object_path`: Subscribed path
+- `event_types`: JSON array of event types
+- `severity_filter`: Minimum severity level
+- `created_at`: Subscription creation time
+
+## 🐛 Debugging
+
+### View Logs
+
+```bash
+# View all service logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f notification-service
+docker-compose logs -f event-generator
+docker-compose logs -f demo-ui
+```
+
+### Database Access
+
+```bash
+# Connect to PostgreSQL
+docker exec -it notification-system-postgres-1 psql -U postgres -d notification_db
+
+# View notifications
+SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 10;
+
+# View subscriptions
+SELECT * FROM notification_subscriptions;
+```
+
+### NATS Monitoring
+
+Visit http://localhost:8222 for NATS server monitoring interface.
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+1. **Services not starting**: Check if ports 3000, 4222, 5432, 8000, 8222, 9222 are available
+2. **No notifications appearing**: Ensure event generator is running and subscriptions are created
+3. **Database connection errors**: Wait for PostgreSQL health check to pass
+4. **UI not loading**: Check if notification-service is responding at http://localhost:8000/health
+
+### Health Checks
+
+```bash
+# Check service health
+curl http://localhost:8000/health
+
+# Check if events are being generated
+docker logs notification-system-event-generator-1 --tail 10
+
+# Check database connectivity
+docker exec notification-system-postgres-1 pg_isready -U postgres
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with the provided setup
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
