@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bulk actions toolbar with selection count
   - "Mark X as read" button for bulk operations
   - Visual highlighting for selected notifications
+- **Dynamic Object Browser**:
+  - New `/objects/hierarchy` backend endpoint
+  - Object Browser now fetches hierarchy from real database data
+  - Automatically builds tree structure from notifications and subscriptions
+  - Supports loading states and error handling
+  - Refresh functionality to update hierarchy
+  - Empty state handling for systems without data
 - **Convenience Shell Scripts**:
   - `start.sh` - Start all services with status display
   - `stop.sh` - Stop all running containers
@@ -40,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved notification access without page switching
   - Efficient bulk notification management
   - Better visual feedback for user actions
+  - Dynamic object discovery instead of static data
 - **Developer Experience**:
   - Easy-to-use shell scripts for common operations
   - Colored output with emojis for better readability
@@ -48,12 +56,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Selected notification styling with blue borders
   - Real-time state management for selections
   - Responsive design for different screen sizes
+  - Loading spinners and error states
 
 ### Technical
+- **Backend APIs**: New hierarchical object structure endpoint
 - **React Components**: Enhanced notification management with hooks
 - **State Management**: Efficient Set-based selection tracking
 - **CSS Styling**: Added visual states for selected notifications
 - **Integration**: Seamless integration between dropdown and notification center
+- **Data-Driven Architecture**: Object Browser now uses real database data
+
+### Removed
+- **Static Data**: Removed hardcoded object hierarchy from Object Browser
+- **Static Imports**: Eliminated sample data dependencies
 
 ## [0.2.0] - Previous Release
 
@@ -88,11 +103,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### v0.3.0 Highlights
 
-This release significantly enhances the user experience with two major UI improvements:
+This release significantly enhances the user experience with three major improvements:
 
 1. **Floating Notification Dropdown** - Users can now quickly view and interact with recent notifications without leaving their current page, providing a seamless workflow experience.
 
 2. **Bulk Selection Feature** - The notification center now supports efficient bulk operations, allowing users to select and mark multiple notifications as read simultaneously.
+
+3. **Dynamic Object Browser** - The Object Browser now fetches real object hierarchy from the database instead of using static data, providing accurate and up-to-date information about the system's structure.
 
 Additionally, the development experience is greatly improved with convenient shell scripts that simplify Docker management and provide comprehensive system monitoring.
 

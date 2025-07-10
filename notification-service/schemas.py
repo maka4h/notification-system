@@ -46,3 +46,12 @@ class SubscriptionCheckResponse(BaseModel):
     is_subscribed: bool
     direct_subscription: Optional[SubscriptionResponse] = None
     inherited_subscription: Optional[SubscriptionResponse] = None
+
+# Bulk operations schemas
+class BulkMarkAsReadRequest(BaseModel):
+    notification_ids: List[str] = Field(..., description="List of notification IDs to mark as read")
+
+class BulkMarkAsReadResponse(BaseModel):
+    status: str
+    updated_count: int
+    message: str

@@ -1,12 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
+import { configService } from '../services/configService';
 import { Link } from 'react-router-dom';
 
 function Dashboard() {
   const { unreadCount, notifications, loading } = useNotifications();
+  const [uiConfig, setUiConfig] = useState(null);
+  const [severityLevels, setSeverityLevels] = useState([]);
   
   // Get recent notifications (last 5)
   const recentNotifications = notifications.slice(0, 5);
+
+  // Load UI configuration
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const [config, severities] = await Promise.all([
+          configService.getUIConfig(),
+          configService.getSeverityLevels()
+        ]);
+        setUiConfig(config);
+        setSeverityLevels(severities);
+      } catch (error) {
+        console.error('Failed to load configuration:', error);
+        // Fallback to default values
+        setUiConfig({
+          dashboard: {
+            title: "Notification System Demo",
+            description: "This demo showcases a hierarchical notification system with the following features:",
+            features: [
+              "Subscribe to objects at any level in a hierarchy",
+              "Automatically receive notifications for child objects",
+              "Real-time notification delivery via WebSockets",
+              "Persistent notification history",
+              "Filter and search through notifications"
+            ],
+            instructions: {
+              title: "How to use this demo:",
+              steps: [
+                "Go to the Object Browser to view the hierarchical object structure",
+                "Subscribe to objects by clicking the bell icon",
+                "An event generator is randomly creating events for objects",
+                "You'll receive real-time notifications for subscribed objects and their children",
+                "View and manage your subscriptions in My Subscriptions",
+                "See all notifications in the Notification Center"
+              ]
+            }
+          }
+        });
+        setSeverityLevels([]);
+      }
+    };
+
+    loadConfig();
+  }, []);
+
+  // Helper function to get severity class using backend configuration
+  const getSeverityClass = (severity) => {
+    return configService.getSeverityClass(severity, severityLevels);
+  };
+
+  if (!uiConfig) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{height: '200px'}}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="dashboard">
@@ -14,28 +76,33 @@ function Dashboard() {
         <div className="col-md-8">
           <div className="card">
             <div className="card-header bg-primary text-white">
-              <h5 className="card-title mb-0">Notification System Demo</h5>
+              <h5 className="card-title mb-0">{uiConfig.dashboard.title}</h5>
             </div>
             <div className="card-body">
-              <p>This demo showcases a hierarchical notification system with the following features:</p>
+              <p>{uiConfig.dashboard.description}</p>
               
               <ul>
-                <li>Subscribe to objects at any level in a hierarchy</li>
-                <li>Automatically receive notifications for child objects</li>
-                <li>Real-time notification delivery via WebSockets</li>
-                <li>Persistent notification history</li>
-                <li>Filter and search through notifications</li>
+                {uiConfig.dashboard.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
               </ul>
               
-              <h5 className="mt-4">How to use this demo:</h5>
+              <h5 className="mt-4">{uiConfig.dashboard.instructions.title}</h5>
               
               <ol>
-                <li>Go to the <Link to="/objects">Object Browser</Link> to view the hierarchical object structure</li>
-                <li>Subscribe to objects by clicking the bell icon</li>
-                <li>An event generator is randomly creating events for objects</li>
-                <li>You'll receive real-time notifications for subscribed objects and their children</li>
-                <li>View and manage your subscriptions in <Link to="/subscriptions">My Subscriptions</Link></li>
-                <li>See all notifications in the <Link to="/notifications">Notification Center</Link></li>
+                {uiConfig.dashboard.instructions.steps.map((step, index) => (
+                  <li key={index}>
+                    {step.includes('Object Browser') ? (
+                      <>Go to the <Link to="/objects">Object Browser</Link> to view the hierarchical object structure</>
+                    ) : step.includes('My Subscriptions') ? (
+                      <>View and manage your subscriptions in <Link to="/subscriptions">My Subscriptions</Link></>
+                    ) : step.includes('Notification Center') ? (
+                      <>See all notifications in the <Link to="/notifications">Notification Center</Link></>
+                    ) : (
+                      step
+                    )}
+                  </li>
+                ))}
               </ol>
             </div>
           </div>
@@ -91,16 +158,6 @@ function Dashboard() {
       </div>
     </div>
   );
-}
-
-function getSeverityClass(severity) {
-  switch (severity) {
-    case 'info': return 'info';
-    case 'warning': return 'warning';
-    case 'error': return 'danger';
-    case 'critical': return 'dark';
-    default: return 'secondary';
-  }
 }
 
 export default Dashboard;

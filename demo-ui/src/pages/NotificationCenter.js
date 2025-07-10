@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
+import { configService } from '../services/configService';
 import { FaFilter, FaSearch, FaCheckCircle, FaCheckSquare, FaSquare } from 'react-icons/fa';
 
 function NotificationCenter() {
@@ -24,6 +25,11 @@ function NotificationCenter() {
   // Selection state
   const [selectedNotifications, setSelectedNotifications] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  
+  // Configuration state
+  const [severityLevels, setSeverityLevels] = useState([]);
+  const [eventTypes, setEventTypes] = useState([]);
+  const [configLoading, setConfigLoading] = useState(true);
   
   // Apply filters
   const applyFilters = () => {
@@ -51,6 +57,30 @@ function NotificationCenter() {
     
     fetchNotifications(activeFilters);
   };
+
+  // Load configuration on component mount
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        setConfigLoading(true);
+        const [severities, events] = await Promise.all([
+          configService.getSeverityLevels(),
+          configService.getEventTypes()
+        ]);
+        setSeverityLevels(severities);
+        setEventTypes(events);
+      } catch (error) {
+        console.error('Failed to load configuration:', error);
+        // Fallback to empty arrays - component will still work
+        setSeverityLevels([]);
+        setEventTypes([]);
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
   
   // Handle filter change
   const handleFilterChange = (e) => {
@@ -192,12 +222,14 @@ function NotificationCenter() {
                 name="severity"
                 value={filters.severity}
                 onChange={handleFilterChange}
+                disabled={configLoading}
               >
                 <option value="">All Severities</option>
-                <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
-                <option value="critical">Critical</option>
+                {severityLevels.map(severity => (
+                  <option key={severity.value} value={severity.value}>
+                    {severity.label}
+                  </option>
+                ))}
               </select>
             </div>
             
@@ -207,14 +239,14 @@ function NotificationCenter() {
                 name="event_type"
                 value={filters.event_type}
                 onChange={handleFilterChange}
+                disabled={configLoading}
               >
                 <option value="">All Event Types</option>
-                <option value="created">Created</option>
-                <option value="updated">Updated</option>
-                <option value="deleted">Deleted</option>
-                <option value="commented">Commented</option>
-                <option value="status_changed">Status Changed</option>
-                <option value="assigned">Assigned</option>
+                {eventTypes.map(eventType => (
+                  <option key={eventType.value} value={eventType.value}>
+                    {eventType.label}
+                  </option>
+                ))}
               </select>
             </div>
             
@@ -346,7 +378,7 @@ function NotificationCenter() {
                         <div className="d-flex justify-content-between align-items-center">
                           <h5 className="mb-1">{notification.title}</h5>
                           <div>
-                            <span className={`badge bg-${getSeverityClass(notification.severity)} me-2`}>
+                            <span className={`badge bg-${configService.getSeverityClass(notification.severity, severityLevels)} me-2`}>
                               {notification.severity}
                             </span>
                             <small className="timestamp">
@@ -391,16 +423,6 @@ function NotificationCenter() {
       )}
     </div>
   );
-}
-
-function getSeverityClass(severity) {
-  switch (severity) {
-    case 'info': return 'info';
-    case 'warning': return 'warning';
-    case 'error': return 'danger';
-    case 'critical': return 'dark';
-    default: return 'secondary';
-  }
 }
 
 function formatPath(path) {

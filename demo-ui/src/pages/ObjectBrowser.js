@@ -1,94 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
-import { FaBell, FaBellSlash, FaChevronDown, FaChevronRight } from 'react-icons/fa';
-
-// Sample hierarchical structure for demo
-const HIERARCHICAL_PATHS = [
-  // Projects
-  {
-    path: '/projects',
-    children: [
-      {
-        path: '/projects/project-a',
-        children: [
-          { path: '/projects/project-a/tasks/task-1' },
-          { path: '/projects/project-a/tasks/task-2' },
-          { path: '/projects/project-a/documents/doc-1' },
-        ]
-      },
-      {
-        path: '/projects/project-b',
-        children: [
-          { path: '/projects/project-b/tasks/task-3' },
-        ]
-      },
-    ]
-  },
-  // Departments
-  {
-    path: '/departments',
-    children: [
-      {
-        path: '/departments/engineering',
-        children: [
-          { path: '/departments/engineering/teams/frontend' },
-          { path: '/departments/engineering/teams/backend' },
-        ]
-      },
-      { path: '/departments/marketing' },
-    ]
-  },
-  // Resources
-  {
-    path: '/resources',
-    children: [
-      {
-        path: '/resources/servers',
-        children: [
-          { path: '/resources/servers/web-1' },
-          { path: '/resources/servers/db-1' },
-        ]
-      },
-      { path: '/resources/databases/users-db' },
-    ]
-  },
-  // Products
-  {
-    path: '/products',
-    children: [
-      {
-        path: '/products/widgets',
-        children: [
-          { path: '/products/widgets/widget-a' },
-          { path: '/products/widgets/widget-b' },
-        ]
-      },
-      {
-        path: '/products/gadgets',
-        children: [
-          { path: '/products/gadgets/gadget-x' },
-        ]
-      },
-    ]
-  },
-];
+import { FaBell, FaBellSlash, FaChevronDown, FaChevronRight, FaSpinner } from 'react-icons/fa';
 
 function ObjectBrowser() {
   const { subscribe, unsubscribe, checkSubscription } = useNotifications();
-  const [expandedNodes, setExpandedNodes] = useState({
-    '/projects': true,
-    '/departments': true,
-    '/resources': true,
-    '/products': true,
-  });
+  const [expandedNodes, setExpandedNodes] = useState({});
   const [subscriptionStatus, setSubscriptionStatus] = useState({});
   const [loading, setLoading] = useState({});
+  const [hierarchyData, setHierarchyData] = useState([]);
+  const [hierarchyLoading, setHierarchyLoading] = useState(true);
+  const [hierarchyError, setHierarchyError] = useState(null);
   
-  // Check subscription status for top-level nodes initially
+  // Fetch object hierarchy from the backend
   useEffect(() => {
-    const topLevelPaths = HIERARCHICAL_PATHS.map(node => node.path);
-    checkSubscriptionStatusBatch(topLevelPaths);
+    fetchObjectHierarchy();
   }, []);
+  
+  const fetchObjectHierarchy = async () => {
+    try {
+      setHierarchyLoading(true);
+      setHierarchyError(null);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/objects/hierarchy`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch object hierarchy: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setHierarchyData(data);
+      
+      // Auto-expand top-level nodes if there are any
+      if (data.length > 0) {
+        const topLevelExpanded = {};
+        data.forEach(node => {
+          topLevelExpanded[node.path] = true;
+        });
+        setExpandedNodes(topLevelExpanded);
+        
+        // Check subscription status for top-level nodes
+        const topLevelPaths = data.map(node => node.path);
+        checkSubscriptionStatusBatch(topLevelPaths);
+      }
+    } catch (error) {
+      console.error('Error fetching object hierarchy:', error);
+      setHierarchyError(error.message);
+    } finally {
+      setHierarchyLoading(false);
+    }
+  };
   
   // Toggle node expansion
   const toggleNode = (path) => {
@@ -122,7 +82,7 @@ function ObjectBrowser() {
       return null;
     };
     
-    return findNode(HIERARCHICAL_PATHS);
+    return findNode(hierarchyData);
   };
   
   // Check subscription status for multiple paths
@@ -286,6 +246,81 @@ function ObjectBrowser() {
     );
   };
   
+  // Render loading state
+  if (hierarchyLoading) {
+    return (
+      <div className="object-browser">
+        <h2 className="mb-4">Object Browser</h2>
+        <div className="text-center py-5">
+          <FaSpinner className="fa-spin fa-2x mb-3" />
+          <p>Loading object hierarchy...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (hierarchyError) {
+    return (
+      <div className="object-browser">
+        <h2 className="mb-4">Object Browser</h2>
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Error Loading Object Hierarchy</h4>
+          <p>{hierarchyError}</p>
+          <button 
+            className="btn btn-outline-danger"
+            onClick={fetchObjectHierarchy}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Render empty state
+  if (hierarchyData.length === 0) {
+    return (
+      <div className="object-browser">
+        <h2 className="mb-4">Object Browser</h2>
+        
+        <div className="card mb-4">
+          <div className="card-header bg-light">
+            <h5 className="mb-0">How subscriptions work</h5>
+          </div>
+          <div className="card-body">
+            <ul className="mb-0">
+              <li>Click <strong>Subscribe</strong> to subscribe directly to an object</li>
+              <li>When you subscribe to a parent object, you automatically receive notifications for all child objects</li>
+              <li>Objects with <strong>Inherited</strong> status are covered by a parent subscription</li>
+              <li>You can't unsubscribe from inherited subscriptions directly (unsubscribe from the parent instead)</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="card">
+          <div className="card-header bg-light">
+            <h5 className="mb-0">Object Hierarchy</h5>
+          </div>
+          <div className="card-body">
+            <div className="text-center py-4">
+              <p className="text-muted">No objects found in the system.</p>
+              <p className="text-muted">
+                Objects will appear here once notifications are generated or subscriptions are created.
+              </p>
+              <button 
+                className="btn btn-outline-primary"
+                onClick={fetchObjectHierarchy}
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="object-browser">
       <h2 className="mb-4">Object Browser</h2>
@@ -305,11 +340,18 @@ function ObjectBrowser() {
       </div>
       
       <div className="card">
-        <div className="card-header bg-light">
+        <div className="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Object Hierarchy</h5>
+          <button 
+            className="btn btn-sm btn-outline-secondary"
+            onClick={fetchObjectHierarchy}
+            disabled={hierarchyLoading}
+          >
+            {hierarchyLoading ? <FaSpinner className="fa-spin" /> : 'Refresh'}
+          </button>
         </div>
         <div className="card-body">
-          {HIERARCHICAL_PATHS.map(node => renderNode(node))}
+          {hierarchyData.map(node => renderNode(node))}
         </div>
       </div>
     </div>
