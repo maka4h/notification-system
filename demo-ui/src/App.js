@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { useNotifications } from './context/NotificationContext';
-import { FaBell } from 'react-icons/fa';
+import NotificationDropdown from './components/NotificationDropdown';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -36,16 +36,9 @@ function App() {
                 <Link className="nav-link" to="/system-log">System Log</Link>
               </li>
             </ul>
-            <div className="d-flex">
-              <Link to="/notifications" className="btn btn-outline-light position-relative me-2">
-                <FaBell />
-                {unreadCount > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </Link>
-              <span className="navbar-text text-light">User: Demo User</span>
+            <div className="d-flex align-items-center">
+              <NotificationDropdown />
+              <span className="navbar-text text-light ms-3">User: Demo User</span>
             </div>
           </div>
         </div>

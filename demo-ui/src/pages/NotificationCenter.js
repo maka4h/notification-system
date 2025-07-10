@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
-import { FaFilter, FaSearch, FaCheckCircle } from 'react-icons/fa';
+import { FaFilter, FaSearch, FaCheckCircle, FaCheckSquare, FaSquare } from 'react-icons/fa';
 
 function NotificationCenter() {
   const { 
@@ -20,6 +20,10 @@ function NotificationCenter() {
     event_type: '',
     search: ''
   });
+
+  // Selection state
+  const [selectedNotifications, setSelectedNotifications] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(false);
   
   // Apply filters
   const applyFilters = () => {
@@ -82,6 +86,52 @@ function NotificationCenter() {
   const handleMarkAsRead = (id) => {
     markAsRead(id);
   };
+
+  // Handle individual notification selection
+  const handleNotificationSelect = (id) => {
+    setSelectedNotifications(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  };
+
+  // Handle select all/none
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedNotifications(new Set());
+    } else {
+      const unreadNotifications = notifications.filter(n => !n.is_read);
+      setSelectedNotifications(new Set(unreadNotifications.map(n => n.id)));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Mark selected notifications as read
+  const handleMarkSelectedAsRead = async () => {
+    const selectedArray = Array.from(selectedNotifications);
+    for (const id of selectedArray) {
+      await markAsRead(id);
+    }
+    setSelectedNotifications(new Set());
+    setSelectAll(false);
+  };
+
+  // Update select all state when notifications change
+  useEffect(() => {
+    const unreadNotifications = notifications.filter(n => !n.is_read);
+    const selectedUnread = unreadNotifications.filter(n => selectedNotifications.has(n.id));
+    
+    if (unreadNotifications.length === 0) {
+      setSelectAll(false);
+    } else {
+      setSelectAll(selectedUnread.length === unreadNotifications.length);
+    }
+  }, [notifications, selectedNotifications]);
   
   // Group notifications by date
   const groupedNotifications = notifications.reduce((groups, notification) => {
@@ -231,58 +281,113 @@ function NotificationCenter() {
           No notifications found. Try changing the filters or subscribe to some objects.
         </div>
       ) : (
-        Object.entries(groupedNotifications).map(([date, items]) => (
-          <div key={date} className="mb-4">
-            <h5 className="border-bottom pb-2">{date}</h5>
-            
-            <div className="list-group">
-              {items.map(notification => (
-                <div 
-                  key={notification.id} 
-                  className={`list-group-item list-group-item-action notification-item severity-${notification.severity} ${notification.is_read ? '' : 'unread'}`}
-                >
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h5 className="mb-1">{notification.title}</h5>
-                    <div>
-                      <span className={`badge bg-${getSeverityClass(notification.severity)} me-2`}>
-                        {notification.severity}
-                      </span>
-                      <small className="timestamp">
-                        {new Date(notification.timestamp).toLocaleTimeString()}
-                      </small>
-                    </div>
+        <>
+          {/* Bulk actions */}
+          {notifications.some(n => !n.is_read) && (
+            <div className="card mb-3">
+              <div className="card-body py-2">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center">
+                    <button
+                      className="btn btn-sm btn-outline-secondary me-3"
+                      onClick={handleSelectAll}
+                      title={selectAll ? "Deselect all" : "Select all unread"}
+                    >
+                      {selectAll ? <FaCheckSquare /> : <FaSquare />}
+                    </button>
+                    <span className="text-muted">
+                      {selectedNotifications.size > 0 
+                        ? `${selectedNotifications.size} selected` 
+                        : "Select unread notifications"}
+                    </span>
                   </div>
                   
-                  <p className="mb-1">{notification.content}</p>
-                  
-                  <div className="d-flex justify-content-between align-items-center mt-2">
-                    <small className="path-display">
-                      {formatPath(notification.object_path)}
-                    </small>
-                    
-                    {!notification.is_read && (
-                      <button 
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => handleMarkAsRead(notification.id)}
-                      >
-                        <FaCheckCircle className="me-1" />
-                        Mark as read
-                      </button>
-                    )}
-                  </div>
-                  
-                  {notification.inherited && (
-                    <div className="mt-1">
-                      <small className="text-muted">
-                        Via subscription to: {notification.extra_data?.subscription_path}
-                      </small>
-                    </div>
+                  {selectedNotifications.size > 0 && (
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={handleMarkSelectedAsRead}
+                    >
+                      <FaCheckCircle className="me-1" />
+                      Mark {selectedNotifications.size} as read
+                    </button>
                   )}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        ))
+          )}
+          
+          {/* Grouped notifications */}
+          {Object.entries(groupedNotifications).map(([date, items]) => (
+            <div key={date} className="mb-4">
+              <h5 className="border-bottom pb-2">{date}</h5>
+              
+              <div className="list-group">
+                {items.map(notification => (
+                  <div 
+                    key={notification.id} 
+                    className={`list-group-item list-group-item-action notification-item severity-${notification.severity} ${notification.is_read ? '' : 'unread'} ${selectedNotifications.has(notification.id) ? 'selected' : ''}`}
+                  >
+                    <div className="d-flex align-items-start">
+                      {/* Selection checkbox */}
+                      {!notification.is_read && (
+                        <div className="me-3 mt-1">
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => handleNotificationSelect(notification.id)}
+                            title={selectedNotifications.has(notification.id) ? "Deselect" : "Select"}
+                          >
+                            {selectedNotifications.has(notification.id) ? <FaCheckSquare /> : <FaSquare />}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Notification content */}
+                      <div className="flex-grow-1">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <h5 className="mb-1">{notification.title}</h5>
+                          <div>
+                            <span className={`badge bg-${getSeverityClass(notification.severity)} me-2`}>
+                              {notification.severity}
+                            </span>
+                            <small className="timestamp">
+                              {new Date(notification.timestamp).toLocaleTimeString()}
+                            </small>
+                          </div>
+                        </div>
+                        
+                        <p className="mb-1">{notification.content}</p>
+                        
+                        <div className="d-flex justify-content-between align-items-center mt-2">
+                          <small className="path-display">
+                            {formatPath(notification.object_path)}
+                          </small>
+                          
+                          {!notification.is_read && (
+                            <button 
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => handleMarkAsRead(notification.id)}
+                            >
+                              <FaCheckCircle className="me-1" />
+                              Mark as read
+                            </button>
+                          )}
+                        </div>
+                        
+                        {notification.inherited && (
+                          <div className="mt-1">
+                            <small className="text-muted">
+                              Via subscription to: {notification.extra_data?.subscription_path}
+                            </small>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
       )}
     </div>
   );

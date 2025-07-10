@@ -16,6 +16,7 @@ The system consists of five main components:
 
 - **Hierarchical Subscriptions**: Subscribe to specific paths or parent paths to receive child notifications
 - **Real-time Notifications**: Event-driven architecture with NATS streaming
+- **Floating Notification Dropdown**: Quick access to recent notifications without leaving the current page
 - **Smart Filtering**: Filter notifications by severity, event type, path, read status, and more
 - **System Monitoring**: View all system events for debugging and monitoring
 - **Responsive UI**: Modern React interface with Bootstrap styling
@@ -36,27 +37,49 @@ The system consists of five main components:
    cd notification-system
    ```
 
-2. **Start all services**:
+2. **Using the convenience scripts** (recommended):
    ```bash
+   # Start all services
+   ./start.sh
+   
+   # Stop all services
+   ./stop.sh
+   
+   # Build fresh images
+   ./build.sh
+   
+   # Complete restart (stop, build, start)
+   ./restart.sh
+   
+   # Clean restart (removes all data)
+   ./clean-restart.sh
+   
+   # Check system status
+   ./status.sh
+   
+   # View logs (all services or specific service)
+   ./logs.sh
+   ./logs.sh demo-ui
+   ```
+
+3. **Using Docker Compose directly**:
+   ```bash
+   # Start all services
    docker-compose up -d
-   ```
-
-3. **Access the application**:
-   - **Demo UI**: http://localhost:3000
-   - **API Documentation**: http://localhost:8000/docs
-   - **NATS Monitoring**: http://localhost:8222
-
-4. **Stop the system**:
-   ```bash
+   
+   # Stop all services
    docker-compose down
-   ```
-
-5. **Clean restart** (removes all data):
-   ```bash
+   
+   # Clean restart (removes all data)
    docker-compose down -v
    docker-compose build --no-cache
    docker-compose up -d
    ```
+
+4. **Access the application**:
+   - **Demo UI**: http://localhost:3000
+   - **API Documentation**: http://localhost:8000/docs
+   - **NATS Monitoring**: http://localhost:8222
 
 ## 📊 Services Overview
 
@@ -70,6 +93,12 @@ React frontend with the following pages:
 - **Subscription Manager**: Create and manage subscriptions
 - **Notification Center**: View and filter personal notifications
 - **System Log**: Monitor all system events (debugging)
+
+**Key UI Features**:
+- **Floating Notification Dropdown**: Click the bell icon in the navbar to see recent notifications in a popup window without leaving your current page
+- **Real-time Updates**: Live notification count badge and automatic refresh
+- **Smart Notifications**: Mark notifications as read directly from the dropdown
+- **Quick Navigation**: "View All" button to access the full notification center
 
 ### NATS Server (Ports 4222, 8222, 9222)
 - **4222**: NATS client connections
@@ -122,6 +151,167 @@ Continuously generates sample events every 30 seconds for testing.
 | `GET` | `/health` | Service health check |
 | `GET` | `/docs` | API documentation (Swagger) |
 
+## 🔔 Notification Dropdown
+
+The Demo UI features a floating notification dropdown that provides quick access to recent notifications without leaving the current page.
+
+### Features
+
+- **Bell Icon**: Located in the navbar with a red badge showing unread count
+- **Floating Window**: 400px wide dropdown that appears below the bell icon
+- **Recent Notifications**: Shows the 10 most recent notifications with:
+  - Notification title and timestamp (e.g., "5m ago", "Just now")
+  - Truncated content preview
+  - Object path and severity level
+  - Visual indicators for unread notifications (bold text, blue border)
+- **Quick Actions**:
+  - Mark individual notifications as read
+  - "View All" button to navigate to the full notification center
+- **Smart Behavior**:
+  - Auto-closes when clicking outside the dropdown
+  - Fetches fresh data each time it opens
+  - Shows loading states and empty state messages
+  - Integrates with real-time notification updates
+
+### Usage
+
+1. **View Recent Notifications**: Click the bell icon in the navbar
+2. **Mark as Read**: Click the "Mark as read" button on unread notifications
+3. **Access Full List**: Click "View All Notifications" to go to the notification center
+4. **Close Dropdown**: Click outside the dropdown or press Escape
+
+This feature enhances user experience by keeping users informed without interrupting their workflow.
+
+## 🛠️ Convenience Scripts
+
+The project includes several shell scripts to make managing the Docker environment easier:
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `start.sh` | Start all services | `./start.sh` |
+| `stop.sh` | Stop all services | `./stop.sh` |
+| `build.sh` | Build Docker images | `./build.sh` |
+| `restart.sh` | Complete restart (stop, build, start) | `./restart.sh` |
+| `clean-restart.sh` | Clean restart (removes all data) | `./clean-restart.sh` |
+| `status.sh` | Check system status and health | `./status.sh` |
+| `logs.sh` | View service logs | `./logs.sh [service-name]` |
+
+### Script Details:
+
+#### 🚀 `start.sh`
+- Starts all Docker services in detached mode
+- Shows service status after startup
+- Displays access points (Demo UI, API Docs, NATS Monitor)
+- Includes helpful messages about the floating notification dropdown
+
+#### 🛑 `stop.sh`
+- Stops and removes all running containers
+- Clean shutdown of the notification system
+- Simple and fast operation
+
+#### 🔨 `build.sh`
+- Builds all Docker images without using cache
+- Ensures fresh builds with latest code changes
+- Useful after making code modifications
+
+#### 🔄 `restart.sh`
+- Complete restart sequence: stop → build → start
+- Preserves database data and volumes
+- Ideal for applying code changes while keeping data
+
+#### 🧹 `clean-restart.sh`
+- Complete clean restart: stop → remove volumes → build → start
+- Removes all data including database contents
+- Fresh start with empty database
+- Use when you want to reset everything
+
+#### 📊 `status.sh`
+- Shows current status of all services
+- Performs health checks on key endpoints
+- Displays service accessibility information
+- Helpful for troubleshooting
+
+#### 📋 `logs.sh`
+- View logs for all services or specific service
+- Real-time log following with `-f` flag
+- Usage: `./logs.sh` (all) or `./logs.sh service-name`
+- Available services: demo-ui, notification-service, event-generator, nats, postgres
+
+### Script Examples:
+
+```bash
+# Quick start
+./start.sh
+
+# Check if everything is running
+./status.sh
+
+# View all logs
+./logs.sh
+
+# View specific service logs
+./logs.sh demo-ui
+./logs.sh notification-service
+
+# Apply code changes (keeps data)
+./restart.sh
+
+# Fresh start (removes all data)
+./clean-restart.sh
+
+# Stop everything
+./stop.sh
+
+# Build fresh images
+./build.sh
+```
+
+### Common Workflows:
+
+```bash
+# Development workflow (preserves data)
+./stop.sh          # Stop services
+# Make code changes
+./restart.sh       # Apply changes
+
+# Clean development start
+./clean-restart.sh # Fresh start with empty database
+
+# Troubleshooting
+./status.sh        # Check service health
+./logs.sh          # View all logs
+./logs.sh demo-ui  # Check specific service
+```
+
+### Script Features:
+
+- **🎨 Colored Output**: Uses emojis and clear formatting for better readability
+- **📊 Health Checks**: Automatic service health verification
+- **⏱️ Progress Indicators**: Shows operation progress and wait times
+- **🔗 Quick Access**: Displays all service URLs after startup
+- **💡 Smart Messages**: Helpful tips and status information
+- **🚀 One-Command Operations**: Simple commands for complex operations
+- **🛡️ Safe Operations**: Proper error handling and confirmations
+
+### Troubleshooting with Scripts:
+
+```bash
+# Check if services are running
+./status.sh
+
+# View recent logs for debugging
+./logs.sh
+
+# Check specific service issues
+./logs.sh notification-service
+./logs.sh demo-ui
+
+# Force clean restart if issues persist
+./clean-restart.sh
+```
+
+All scripts are executable and ready to use. They provide a convenient way to manage the notification system without remembering complex Docker commands.
+
 ## 📁 Project Structure
 
 ```
@@ -129,12 +319,21 @@ notification-system/
 ├── docker-compose.yml          # Multi-service orchestration
 ├── nats.conf                   # NATS server configuration
 ├── README.md                   # This file
+├── start.sh                    # Start all services
+├── stop.sh                     # Stop all services
+├── build.sh                    # Build Docker images
+├── restart.sh                  # Complete restart
+├── clean-restart.sh            # Clean restart (removes data)
+├── status.sh                   # Check system status
+├── logs.sh                     # View service logs
 ├── demo-ui/                    # React frontend
 │   ├── Dockerfile
 │   ├── package.json
 │   ├── public/
 │   └── src/
 │       ├── App.js             # Main app component
+│       ├── components/        # Reusable components
+│       │   └── NotificationDropdown.js  # Floating notification popup
 │       ├── context/           # React context for notifications
 │       └── pages/             # UI pages
 ├── event-generator/            # Event simulation service
