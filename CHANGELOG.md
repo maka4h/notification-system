@@ -5,6 +5,75 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-07-10
+
+### Added
+- **Comprehensive Swagger/OpenAPI Documentation**:
+  - Enhanced all API endpoints with detailed descriptions and examples
+  - Added comprehensive endpoint documentation with parameter descriptions
+  - Structured API documentation with organized tags:
+    - `notifications`: Notification management and bulk operations
+    - `subscriptions`: Hierarchical subscription management  
+    - `configuration`: Backend-driven UI configuration
+    - `system`: Health checks and object hierarchy
+    - `websocket`: Real-time notification streaming
+  - Added API metadata with contact info, license, and terms of service
+  - Response schemas with detailed examples for all endpoints
+  - Error response definitions and status codes
+  - Use case explanations for each endpoint
+- **Bulk Operations API**:
+  - New `/notifications/bulk-read` endpoint for marking multiple notifications as read
+  - Proper request/response schemas with validation
+  - Support for batch processing with user filtering
+  - Detailed API documentation with examples
+- **WebSocket Real-time Notifications**:
+  - Added `/ws/notifications/{user_id}` WebSocket endpoint
+  - Real-time notification streaming to connected clients
+  - Proper connection management and error handling
+  - Documentation with usage examples
+- **Backend-Driven Configuration**:
+  - Enhanced `/config/severity-levels` with detailed UI configuration
+  - Enhanced `/config/event-types` with comprehensive event definitions
+  - Enhanced `/config/ui` with dynamic content management
+  - All configuration endpoints now have proper documentation
+- **New Pydantic Schemas**:
+  - `BulkMarkAsReadRequest` for bulk operation requests
+  - `BulkMarkAsReadResponse` for bulk operation responses
+  - Enhanced validation and type safety
+
+### Enhanced
+- **API Documentation Quality**:
+  - All endpoints now have comprehensive FastAPI decorators
+  - Detailed parameter descriptions with examples
+  - Response examples showing real data structures
+  - Error handling documentation with status codes
+  - Professional-grade API documentation via Swagger UI
+- **Developer Experience**:
+  - Complete self-documenting API interface
+  - Easy testing via Swagger UI
+  - Clear endpoint organization and categorization
+  - Comprehensive API examples and use cases
+- **Code Quality**:
+  - Enhanced type safety with new Pydantic schemas
+  - Better separation of concerns in API documentation
+  - Improved error handling and validation
+
+### Technical
+- **FastAPI Enhancements**:
+  - Comprehensive OpenAPI metadata configuration
+  - Organized endpoint tags for better API navigation
+  - Enhanced response models with examples
+  - Professional API documentation structure
+- **WebSocket Integration**:
+  - Real-time notification delivery system
+  - Proper connection lifecycle management
+  - Error handling and graceful disconnection
+- **API Standards**:
+  - RESTful API design with proper HTTP methods
+  - Consistent response formats across endpoints
+  - Proper error status codes and messages
+  - Comprehensive request/response validation
+
 ## [0.3.0] - 2025-07-10
 
 ### Added
@@ -100,6 +169,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Release Notes
+
+### v0.4.0 Highlights
+
+This release focuses on enhancing the API documentation and introducing new API features:
+
+1. **Comprehensive Swagger/OpenAPI Documentation** - All API endpoints now have detailed documentation with descriptions, examples, and structured organization, making it easier for developers to understand and use the API.
+
+2. **Bulk Operations API** - A new API endpoint for marking multiple notifications as read has been added, supporting efficient bulk operations.
+
+3. **WebSocket Real-time Notifications** - Introduced a WebSocket endpoint for real-time notification streaming to connected clients.
+
+4. **Backend-Driven Configuration** - Configuration endpoints have been enhanced with detailed UI configuration and dynamic content management.
+
+5. **New Pydantic Schemas** - Added new Pydantic schemas for bulk operation requests and responses, improving validation and type safety.
+
+### Upgrade Instructions
+
+1. Pull the latest changes
+2. Use the new `./restart.sh` script to apply updates
+3. All new features are immediately available in the UI
+
+### Breaking Changes
+
+None - this release is fully backward compatible.
+
+### Migration Guide
+
+No migration steps required. All existing data and functionality remain intact.
 
 ### v0.3.0 Highlights
 
