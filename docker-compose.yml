@@ -13,15 +13,16 @@ services:
     networks:
       - notification-network
 
-  # PostgreSQL with TimescaleDB
+  # PostgreSQL database
   postgres:
-    image: timescale/timescaledb:latest-pg15
+    image: postgres:15-alpine
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: notification_db
+      TZ: UTC
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -43,6 +44,7 @@ services:
       NATS_URL: nats://nats:4222
       POSTGRES_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/notification_db
       LOG_LEVEL: INFO
+      TZ: UTC
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +75,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NATS_URL: nats://nats:4222
+      GENERATE_INTERVAL: 5
     depends_on:
       - nats
     networks:

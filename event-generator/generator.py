@@ -19,7 +19,7 @@ logger = logging.getLogger("event-generator")
 
 # Environment variables
 NATS_URL = os.environ.get("NATS_URL", "nats://nats:4222")
-GENERATE_INTERVAL = int(os.environ.get("GENERATE_INTERVAL", "30"))  # seconds
+GENERATE_INTERVAL = int(os.environ.get("GENERATE_INTERVAL", "5"))  # seconds
 
 # Sample hierarchical structure for demo
 HIERARCHICAL_PATHS = [

@@ -37,7 +37,7 @@ function SystemLog() {
   }, [autoRefresh]);
 
   const formatLogEntry = (notification) => {
-    const timestamp = new Date(notification.timestamp).toISOString();
+    const timestamp = new Date(notification.timestamp).toLocaleString();
     const severity = notification.severity.toUpperCase().padEnd(8);
     const path = notification.object_path.padEnd(30);
     return `${timestamp} [${severity}] ${path} - ${notification.title}${notification.description ? ' | ' + notification.description : ''}`;

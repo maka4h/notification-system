@@ -5,6 +5,65 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-07-11
+
+### Added
+- **Database-Driven Configuration System**:
+  - Migrated severity levels from hardcoded values to database tables
+  - Migrated event types from hardcoded values to database tables
+  - All configuration endpoints now read from database instead of static data
+  - Initial data population via Alembic migrations
+- **Complete Database Migration Framework**:
+  - Migrated from TimescaleDB to standard PostgreSQL
+  - Consolidated all table creation into single Alembic migration
+  - All database objects now created exclusively via Alembic migrations
+  - Removed SQLAlchemy `create_all()` calls from application startup
+
+### Changed
+- **Clean Architecture Implementation**:
+  - Refactored `main.py` to only handle application startup (clean architecture)
+  - Created proper service layer in `app/services/` for business logic
+  - Created repository layer in `app/repositories/` for data access
+  - Created API layer in `app/api/` for endpoint handling
+  - Created core layer in `app/core/` for configuration and dependencies
+  - Proper separation of concerns across all application layers
+- **Database Schema Management**:
+  - All database schema creation now handled exclusively by Alembic migrations
+  - Removed TimescaleDB extensions and hypertables
+  - Clean PostgreSQL schema with notifications namespace
+  - Proper foreign key relationships between configuration tables
+- **Timezone Handling**:
+  - Fixed inconsistent timestamp handling across the system
+  - Backend now consistently uses UTC timestamps (`datetime.utcnow()`)
+  - Frontend displays timestamps in user's local timezone
+  - Added `TZ: UTC` environment variables to all Docker containers
+  - SystemLog now properly displays local time instead of UTC
+
+### Fixed
+- **Database Migration Issues**:
+  - Fixed duplicate table creation in Alembic migration files
+  - Resolved table already exists errors during migration
+  - Clean migration process from scratch with fresh environment
+- **Container Configuration**:
+  - Enhanced Dockerfile to properly copy `alembic.ini` during build
+  - Improved Docker Compose configuration with proper dependencies
+  - Clean container startup with proper health checks
+- **Timestamp Display Issues**:
+  - Fixed 4-8 hour timezone discrepancies in UI
+  - Resolved inconsistent timestamp storage (some local, some UTC)
+  - SystemLog now shows correct local timestamps
+  - Database consistently stores UTC timestamps
+
+### Technical Debt Reduction
+- **Code Organization**:
+  - Eliminated god objects and monolithic main.py
+  - Proper dependency injection patterns
+  - Clear separation between API, business logic, and data layers
+- **Database Management**:
+  - Migration-only schema management (no code-based table creation)
+  - Consistent timestamp handling across all components
+  - Proper database constraints and relationships
+
 ## [0.4.0] - 2025-07-10
 
 ### Added
