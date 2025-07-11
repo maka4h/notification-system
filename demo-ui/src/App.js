@@ -1,7 +1,9 @@
-import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from './context/NotificationContext';
+import { useUser } from './context/UserContext';
 import NotificationDropdown from './components/NotificationDropdown';
+import UserSelector from './components/UserSelector';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -12,6 +14,13 @@ import SystemLog from './pages/SystemLog';
 
 function App() {
   const { unreadCount } = useNotifications();
+  const { setNavigation } = useUser();
+  const navigate = useNavigate();
+
+  // Set up navigation callback for user switching
+  useEffect(() => {
+    setNavigation(navigate);
+  }, [navigate, setNavigation]);
   
   return (
     <div className="App">
@@ -38,7 +47,7 @@ function App() {
             </ul>
             <div className="d-flex align-items-center">
               <NotificationDropdown />
-              <span className="navbar-text text-light ms-3">User: Demo User</span>
+              <UserSelector />
             </div>
           </div>
         </div>

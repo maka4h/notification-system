@@ -5,6 +5,54 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-07-11
+
+### Added
+- **User Switching System**:
+  - Complete user context management with UserProvider and UserSelector components
+  - Dynamic user switching with automatic navigation to main page
+  - User-specific notification loading and real-time updates
+  - User session persistence via localStorage
+  - Five demo users: Alice Johnson (Project Manager), Bob Smith (Developer), Carol Davis (System Administrator), David Wilson (QA Engineer), Emma Brown (DevOps Engineer)
+
+- **Enhanced User Experience**:
+  - Loading states during user switching with visual feedback
+  - Automatic notification clearing when switching users
+  - User-specific NATS subscription management
+  - Clean state reset for notifications, toasts, and bell icon counts
+
+- **Frontend Architecture Improvements**:
+  - UserContext with navigation callback pattern to avoid circular dependencies
+  - Enhanced NotificationContext with proper user-based API calls
+  - All API endpoints now correctly use X-User-ID headers
+  - User-specific notification dropdown in navigation bar
+
+- **Backend User Support**:
+  - Enhanced dependencies.py to support user identification via headers and query parameters
+  - User-specific notification filtering and retrieval
+  - Event generator updated to support multiple demo users
+  - Proper user context propagation throughout the API layer
+
+### Fixed
+- **API Authentication Issues**:
+  - Fixed mark-as-read functionality to work for all users (was only working for Alice)
+  - Fixed notification dropdown to show correct user's notifications
+  - Added missing X-User-ID headers to all API calls
+  - Resolved dependency array issues in React hooks causing stale user references
+
+- **User Interface Bugs**:
+  - Fixed notification bell icon to display correct unread count per user
+  - Resolved issue where notification dropdown always showed first user's data
+  - Fixed user switching to properly clear previous user's data
+  - Corrected useCallback dependencies to prevent stale closures
+
+### Enhanced
+- **Development Tooling**:
+  - Enhanced clean-restart.sh script with Docker health checks
+  - Added confirmation prompts for destructive operations
+  - Improved error handling and status reporting
+  - Better Docker system cleanup and volume management
+
 ## [0.5.0] - 2025-07-11
 
 ### Added

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNotifications } from '../context/NotificationContext';
+import { useUser } from '../context/UserContext';
 import { FaBell, FaEye, FaExternalLinkAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -12,6 +13,7 @@ function NotificationDropdown() {
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
   
+  const { currentUser } = useUser();
   const { 
     unreadCount, 
     markAsRead
@@ -35,7 +37,11 @@ function NotificationDropdown() {
   const fetchRecentNotifications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/notifications?limit=10`);
+      const response = await axios.get(`${API_URL}/notifications?limit=10`, {
+        headers: {
+          'X-User-ID': currentUser.id
+        }
+      });
       setRecentNotifications(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -48,7 +54,13 @@ function NotificationDropdown() {
     if (isOpen) {
       fetchRecentNotifications();
     }
-  }, [isOpen]);
+  }, [isOpen, currentUser.id]);
+
+  // Clear notifications when user changes
+  useEffect(() => {
+    setRecentNotifications([]);
+    setIsOpen(false); // Close dropdown when switching users
+  }, [currentUser.id]);
 
   const handleBellClick = (e) => {
     e.preventDefault();

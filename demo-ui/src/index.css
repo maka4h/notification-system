@@ -146,3 +146,57 @@ body {
   right: 20px;
   z-index: 1050;
 }
+
+/* User Selector styles */
+.user-selector {
+  position: relative;
+  z-index: 1000;
+}
+
+.user-selector .dropdown-menu {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  z-index: 1050 !important;
+}
+
+.user-selector .dropdown-item {
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.user-selector .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.user-selector .dropdown-item.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.user-selector .dropdown-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer !important;
+}
+
+.user-selector .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #007bff, #6610f2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  margin-right: 10px;
+}

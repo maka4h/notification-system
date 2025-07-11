@@ -58,11 +58,13 @@ EVENT_TYPES = [
     "warning",
 ]
 
-# Sample users for events
+# Sample users for events (matching frontend users)
 USERS = [
     {"id": "user123", "name": "Alice Johnson"},
     {"id": "user456", "name": "Bob Smith"},
-    {"id": "user789", "name": "Carol Williams"},
+    {"id": "user789", "name": "Carol Davis"},
+    {"id": "user000", "name": "David Wilson"},
+    {"id": "user111", "name": "Emma Brown"},
 ]
 
 async def generate_random_event(nc):
