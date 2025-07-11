@@ -19,13 +19,25 @@ The system consists of five main components:
 
 ## ✨ Features
 
+- **Multi-User System**: Complete user switching functionality with 5 demo users (Alice, Bob, Carol, David, Emma)
+- **User-Specific Notifications**: Each user receives notifications based on their subscriptions
 - **Hierarchical Subscriptions**: Subscribe to specific paths or parent paths to receive child notifications
-- **Real-time Notifications**: Event-driven architecture with NATS streaming
-- **Floating Notification Dropdown**: Quick access to recent notifications without leaving the current page
+- **Real-time Notifications**: Event-driven architecture with NATS streaming per user
+- **Floating Notification Dropdown**: User-specific quick access to recent notifications
 - **Smart Filtering**: Filter notifications by severity, event type, path, read status, and more
 - **System Monitoring**: View all system events for debugging and monitoring
-- **Responsive UI**: Modern React interface with Bootstrap styling
-- **Auto-refresh**: Real-time updates in the notification center and system log
+- **Responsive UI**: Modern React interface with Bootstrap styling and user selector
+- **Auto-refresh**: Real-time updates in the notification center and system log per user
+
+## 🆕 Version 0.6.0 Highlights
+
+- **🔄 User Switching System**: Seamless switching between multiple demo users
+- **👤 User Context Management**: Complete isolation of notifications and subscriptions per user
+- **🔔 User-Specific Notifications**: Bell icon and dropdown show notifications for current user only
+- **⚡ Real-time User Updates**: NATS subscriptions automatically switch when changing users
+- **🎯 Enhanced UX**: Loading states, automatic navigation, and clean state management
+- **🔧 API Improvements**: Proper user identification across all endpoints
+- **🐛 Bug Fixes**: Resolved mark-as-read issues and notification display problems
 
 ## 🆕 Version 0.5.0 Highlights
 
@@ -105,6 +117,12 @@ The system consists of five main components:
    - **Demo UI**: http://localhost:3000
    - **API Documentation**: http://localhost:8000/docs
    - **NATS Monitoring**: http://localhost:8222
+
+5. **Try the user switching feature**:
+   - Click the user dropdown in the top-right corner of the Demo UI
+   - Switch between the 5 demo users (Alice, Bob, Carol, David, Emma)
+   - Notice how notifications and subscriptions change per user
+   - Each user has different subscriptions and receives different notifications
 
 ## 📊 Services Overview
 
