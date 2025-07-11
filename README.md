@@ -27,6 +27,26 @@ The system consists of five main components:
 - **Responsive UI**: Modern React interface with Bootstrap styling
 - **Auto-refresh**: Real-time updates in the notification center and system log
 
+## 🆕 Version 0.5.0 Highlights
+
+### Database-Driven Configuration
+- **Dynamic Severity Levels**: Severity levels are now stored in the database and configurable via API
+- **Dynamic Event Types**: Event types are managed through database configuration
+- **PostgreSQL Migration**: Migrated from TimescaleDB to standard PostgreSQL with proper schema management
+- **Alembic Migrations**: All database schema changes are managed through Alembic migrations
+
+### Clean Architecture Implementation
+- **Layered Architecture**: Implemented proper separation of concerns with API, Service, Repository, and Core layers
+- **Dependency Injection**: Clean dependency management through the core layer
+- **Maintainable Codebase**: Easy to test, extend, and maintain with clear separation between layers
+- **Entry Point Simplification**: `main.py` now only handles application startup
+
+### Enhanced Database Management
+- **Migration-Only Schema**: Database objects are created exclusively through Alembic migrations
+- **Foreign Key Relationships**: Proper database relationships between configuration tables
+- **Data Integrity**: Enhanced data consistency and referential integrity
+- **Clean Database Setup**: Fresh database setup with automated migration execution
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -111,7 +131,7 @@ React frontend with the following pages:
 - **9222**: WebSocket connections
 
 ### PostgreSQL (Port 5432)
-TimescaleDB-enabled PostgreSQL for storing notifications and subscriptions.
+PostgreSQL database for storing notifications, subscriptions, and system configuration. The database schema is managed through Alembic migrations with proper foreign key relationships.
 
 ### Event Generator
 Continuously generates sample events every 30 seconds for testing.
@@ -149,12 +169,27 @@ Continuously generates sample events every 30 seconds for testing.
 - `event_types`: List of event types to subscribe to
 - `severity_filter`: Minimum severity level
 
-### Health & Monitoring
+### Configuration (New in v0.5.0)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/configuration/severity-levels` | Get available severity levels from database |
+| `GET` | `/configuration/event-types` | Get available event types from database |
+| `GET` | `/configuration/ui-config` | Get UI configuration settings |
+
+### System & Health
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Service health check |
 | `GET` | `/docs` | API documentation (Swagger) |
+| `GET` | `/system/objects` | Get object hierarchy for path browsing |
+
+### WebSocket
+
+| Endpoint | Description |
+|----------|-------------|
+| `WS` `/ws/notifications/{user_id}` | Real-time notification streaming |
 
 ## 🔔 Notification Dropdown
 
@@ -324,6 +359,10 @@ notification-system/
 ├── docker-compose.yml          # Multi-service orchestration
 ├── nats.conf                   # NATS server configuration
 ├── README.md                   # This file
+├── CHANGELOG.md                # Version history and changes
+├── LICENSE                     # MIT License
+├── .github/workflows/          # GitHub Actions CI/CD
+│   └── ci.yml                 # Automated testing and building
 ├── start.sh                    # Start all services
 ├── stop.sh                     # Stop all services
 ├── build.sh                    # Build Docker images
@@ -345,12 +384,39 @@ notification-system/
 │   ├── Dockerfile
 │   ├── generator.py           # Event generation logic
 │   └── requirements.txt
-└── notification-service/       # FastAPI backend
+└── notification-service/       # FastAPI backend (Clean Architecture)
     ├── Dockerfile
-    ├── main.py                # Main API application
-    ├── models.py              # Database models
-    ├── schemas.py             # Pydantic schemas
-    └── requirements.txt
+    ├── main.py                # Legacy entry point (imports from app/)
+    ├── models.py              # Database models (legacy)
+    ├── schemas.py             # Pydantic schemas (legacy)
+    ├── requirements.txt
+    ├── alembic.ini             # Database migration configuration
+    ├── alembic/                # Database migrations
+    │   ├── env.py
+    │   └── versions/
+    │       └── 0001_add_configuration_tables.py
+    └── app/                    # Clean Architecture Implementation
+        ├── __init__.py
+        ├── main.py            # 🎯 Main FastAPI application
+        ├── api/               # 🌐 API Layer (Controllers)
+        │   ├── __init__.py
+        │   ├── router.py      # Main API router
+        │   ├── configuration.py  # Configuration endpoints
+        │   ├── notifications.py  # Notification endpoints
+        │   ├── objects.py     # Object hierarchy endpoints
+        │   ├── subscriptions.py  # Subscription endpoints
+        │   └── system.py      # System health endpoints
+        ├── core/              # ⚙️ Core Configuration
+        │   ├── __init__.py
+        │   ├── config.py      # Application settings
+        │   └── dependencies.py   # Dependency injection
+        ├── services/          # 🧠 Business Logic Layer
+        │   ├── __init__.py
+        │   ├── event_processor.py    # Event processing logic
+        │   └── notification_service.py   # Notification business logic
+        └── repositories/      # 💾 Data Access Layer
+            ├── __init__.py
+            └── notification_repository.py   # Database operations
 ```
 
 ## 🎯 Usage Examples
