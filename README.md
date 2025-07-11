@@ -1,14 +1,19 @@
-# Notification System
+# 🔔 Hierarchical Notification System
 
-A real-time, hierarchical notification system built with FastAPI, NATS, PostgreSQL (TimescaleDB), and React. The system provides event-driven notifications with subscription management and supports hierarchical object paths for flexible notification routing.
+A real-time, hierarchical notification system built with FastAPI, NATS, PostgreSQL, and React. The system provides event-driven notifications with subscription management and supports hierarchical object paths for flexible notification routing.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org)
 
 ## 🏗️ Architecture
 
 The system consists of five main components:
 
 - **NATS Server**: Message broker for event streaming with JetStream persistence
-- **PostgreSQL + TimescaleDB**: Database for storing notifications and subscriptions
-- **Notification Service**: FastAPI backend that processes events and manages subscriptions
+- **PostgreSQL**: Database for storing notifications, subscriptions, and configuration
+- **Notification Service**: FastAPI backend that processes events and manages subscriptions  
 - **Demo UI**: React frontend for managing subscriptions and viewing notifications
 - **Event Generator**: Simulates real-world events for testing and demonstration
 
@@ -516,11 +521,41 @@ docker exec notification-system-postgres-1 pg_isready -U postgres
 
 ## 🤝 Contributing
 
+We welcome contributions! Please follow these steps:
+
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
 4. Test with the provided setup
-5. Submit a pull request
+5. Commit your changes: `git commit -m 'Add some amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🏷️ Version History
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+
+## 🙏 Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern, fast web framework for building APIs
+- [NATS](https://nats.io/) - High-performance messaging system
+- [React](https://reactjs.org/) - Frontend framework
+- [PostgreSQL](https://www.postgresql.org/) - Powerful, open source object-relational database system
+
+## 📞 Support
+
+If you have any questions or need help, please:
+1. Check the [troubleshooting section](#-troubleshooting)
+2. Look through existing [issues](../../issues)
+3. Create a new issue if needed
+
+---
+
+**Happy coding!** 🚀
 
 ## 📄 License
 
