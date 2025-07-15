@@ -7,10 +7,16 @@ function NotificationCenter() {
   const { 
     notifications, 
     loading, 
+    loadingMore,
     error, 
-    fetchNotifications, 
+    fetchNotifications,
+    loadMoreNotifications,
     markAsRead,
-    unreadCount
+    bulkMarkAsRead,
+    markAllAsRead,
+    unreadCount,
+    hasMore,
+    connectionState
   } = useNotifications();
   
   // Filter state
@@ -55,7 +61,7 @@ function NotificationCenter() {
       activeFilters.search = filters.search;
     }
     
-    fetchNotifications(activeFilters);
+    fetchNotifications(activeFilters, true); // Reset pagination
   };
 
   // Load configuration on component mount
@@ -109,7 +115,7 @@ function NotificationCenter() {
       search: ''
     });
     
-    fetchNotifications();
+    fetchNotifications({}, true); // Reset pagination
   };
   
   // Mark notification as read
@@ -144,11 +150,36 @@ function NotificationCenter() {
   // Mark selected notifications as read
   const handleMarkSelectedAsRead = async () => {
     const selectedArray = Array.from(selectedNotifications);
-    for (const id of selectedArray) {
-      await markAsRead(id);
+    if (selectedArray.length === 0) return;
+    
+    try {
+      await bulkMarkAsRead(selectedArray);
+      setSelectedNotifications(new Set());
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Error marking selected notifications as read:', error);
     }
-    setSelectedNotifications(new Set());
-    setSelectAll(false);
+  };
+
+  // Mark all notifications as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+      setSelectedNotifications(new Set());
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  // Handle infinite scroll
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    
+    // Load more when user scrolls to within 100px of the bottom
+    if (scrollHeight - scrollTop <= clientHeight + 100 && hasMore && !loadingMore) {
+      loadMoreNotifications();
+    }
   };
 
   // Update select all state when notifications change
@@ -179,7 +210,26 @@ function NotificationCenter() {
     <div className="notification-center">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Notification Center</h2>
-        <span className="badge bg-primary">{unreadCount} unread</span>
+        <div className="d-flex align-items-center gap-3">
+          <span className="badge bg-primary">{unreadCount} unread</span>
+          <div className="d-flex align-items-center">
+            <span 
+              className={`badge ${
+                connectionState === 'connected' ? 'bg-success' : 
+                connectionState === 'connecting' ? 'bg-warning' : 
+                connectionState === 'error' ? 'bg-danger' : 'bg-secondary'
+              }`}
+              title={`Real-time connection: ${connectionState}`}
+            >
+              {connectionState === 'connected' && '🟢'}
+              {connectionState === 'connecting' && '🟡'}
+              {connectionState === 'error' && '🔴'}
+              {connectionState === 'disconnected' && '⚪'}
+              {' '}
+              {connectionState}
+            </span>
+          </div>
+        </div>
       </div>
       
       {/* Filters */}
@@ -334,91 +384,148 @@ function NotificationCenter() {
                     </span>
                   </div>
                   
-                  {selectedNotifications.size > 0 && (
+                  <div className="d-flex gap-2">
+                    {selectedNotifications.size > 0 && (
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={handleMarkSelectedAsRead}
+                      >
+                        <FaCheckCircle className="me-1" />
+                        Mark {selectedNotifications.size} as read
+                      </button>
+                    )}
+                    
                     <button
-                      className="btn btn-sm btn-success"
-                      onClick={handleMarkSelectedAsRead}
+                      className="btn btn-sm btn-warning"
+                      onClick={handleMarkAllAsRead}
+                      title="Mark all notifications as read"
                     >
                       <FaCheckCircle className="me-1" />
-                      Mark {selectedNotifications.size} as read
+                      Mark All Read
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
           )}
           
-          {/* Grouped notifications */}
-          {Object.entries(groupedNotifications).map(([date, items]) => (
-            <div key={date} className="mb-4">
-              <h5 className="border-bottom pb-2">{date}</h5>
-              
-              <div className="list-group">
-                {items.map(notification => (
-                  <div 
-                    key={notification.id} 
-                    className={`list-group-item list-group-item-action notification-item severity-${notification.severity} ${notification.is_read ? '' : 'unread'} ${selectedNotifications.has(notification.id) ? 'selected' : ''}`}
-                  >
-                    <div className="d-flex align-items-start">
-                      {/* Selection checkbox */}
-                      {!notification.is_read && (
-                        <div className="me-3 mt-1">
-                          <button
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => handleNotificationSelect(notification.id)}
-                            title={selectedNotifications.has(notification.id) ? "Deselect" : "Select"}
-                          >
-                            {selectedNotifications.has(notification.id) ? <FaCheckSquare /> : <FaSquare />}
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Notification content */}
-                      <div className="flex-grow-1">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <h5 className="mb-1">{notification.title}</h5>
-                          <div>
-                            <span className={`badge bg-${configService.getSeverityClass(notification.severity, severityLevels)} me-2`}>
-                              {notification.severity}
-                            </span>
-                            <small className="timestamp">
-                              {new Date(notification.timestamp).toLocaleTimeString()}
-                            </small>
-                          </div>
-                        </div>
-                        
-                        <p className="mb-1">{notification.content}</p>
-                        
-                        <div className="d-flex justify-content-between align-items-center mt-2">
-                          <small className="path-display">
-                            {formatPath(notification.object_path)}
-                          </small>
-                          
-                          {!notification.is_read && (
-                            <button 
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleMarkAsRead(notification.id)}
+          {/* Scrollable notifications container */}
+          <div 
+            className="notifications-scroll-container"
+            onScroll={handleScroll}
+            style={{ 
+              maxHeight: '70vh', 
+              overflowY: 'auto',
+              border: '1px solid #dee2e6',
+              borderRadius: '0.375rem',
+              padding: '1rem'
+            }}
+          >
+            {/* Grouped notifications */}
+            {Object.entries(groupedNotifications).map(([date, items]) => (
+              <div key={date} className="mb-4">
+                <h5 className="border-bottom pb-2">{date}</h5>
+                
+                <div className="list-group">
+                  {items.map(notification => (
+                    <div 
+                      key={notification.id} 
+                      className={`list-group-item list-group-item-action notification-item severity-${notification.severity} ${notification.is_read ? '' : 'unread'} ${selectedNotifications.has(notification.id) ? 'selected' : ''}`}
+                    >
+                      <div className="d-flex align-items-start">
+                        {/* Selection checkbox */}
+                        {!notification.is_read && (
+                          <div className="me-3 mt-1">
+                            <button
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={() => handleNotificationSelect(notification.id)}
+                              title={selectedNotifications.has(notification.id) ? "Deselect" : "Select"}
                             >
-                              <FaCheckCircle className="me-1" />
-                              Mark as read
+                              {selectedNotifications.has(notification.id) ? <FaCheckSquare /> : <FaSquare />}
                             </button>
-                          )}
-                        </div>
-                        
-                        {notification.inherited && (
-                          <div className="mt-1">
-                            <small className="text-muted">
-                              Via subscription to: {notification.extra_data?.subscription_path}
-                            </small>
                           </div>
                         )}
+                        
+                        {/* Notification content */}
+                        <div className="flex-grow-1">
+                          <div className="d-flex justify-content-between align-items-center">
+                            <h5 className="mb-1">{notification.title}</h5>
+                            <div>
+                              <span className={`badge bg-${configService.getSeverityClass(notification.severity, severityLevels)} me-2`}>
+                                {notification.severity}
+                              </span>
+                              <small className="timestamp">
+                                {new Date(notification.timestamp).toLocaleTimeString()}
+                              </small>
+                            </div>
+                          </div>
+                          
+                          <p className="mb-1">{notification.content}</p>
+                          
+                          <div className="d-flex justify-content-between align-items-center mt-2">
+                            <small className="path-display">
+                              {formatPath(notification.object_path)}
+                            </small>
+                            
+                            {!notification.is_read && (
+                              <button 
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => handleMarkAsRead(notification.id)}
+                              >
+                                <FaCheckCircle className="me-1" />
+                                Mark as read
+                              </button>
+                            )}
+                          </div>
+                          
+                          {notification.inherited && (
+                            <div className="mt-1">
+                              <small className="text-muted">
+                                Via subscription to: {notification.extra_data?.subscription_path}
+                              </small>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+            
+            {/* Load more indicator */}
+            {loadingMore && (
+              <div className="text-center p-3">
+                <div className="spinner-border spinner-border-sm text-primary" role="status">
+                  <span className="visually-hidden">Loading more...</span>
+                </div>
+                <div className="mt-2">
+                  <small className="text-muted">Loading more notifications...</small>
+                </div>
+              </div>
+            )}
+            
+            {/* Load more button */}
+            {hasMore && !loadingMore && notifications.length > 0 && (
+              <div className="text-center p-3">
+                <button 
+                  className="btn btn-outline-primary"
+                  onClick={loadMoreNotifications}
+                >
+                  Load More Notifications
+                </button>
+              </div>
+            )}
+            
+            {/* End indicator */}
+            {!hasMore && notifications.length > 0 && (
+              <div className="text-center p-3">
+                <small className="text-muted">
+                  📄 All notifications loaded ({notifications.length} total)
+                </small>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

@@ -3,20 +3,87 @@ import { useNotifications } from '../context/NotificationContext';
 import { FaBell, FaBellSlash, FaChevronDown, FaChevronRight, FaSpinner } from 'react-icons/fa';
 
 function ObjectBrowser() {
-  const { subscribe, unsubscribe, checkSubscription } = useNotifications();
+  const { subscribe, unsubscribe, checkSubscription, getSubscriptions, currentUser } = useNotifications();
   const [expandedNodes, setExpandedNodes] = useState({});
   const [subscriptionStatus, setSubscriptionStatus] = useState({});
   const [loading, setLoading] = useState({});
   const [hierarchyData, setHierarchyData] = useState([]);
   const [hierarchyLoading, setHierarchyLoading] = useState(true);
   const [hierarchyError, setHierarchyError] = useState(null);
+  const [existingSubscriptions, setExistingSubscriptions] = useState([]);
   
-  // Fetch object hierarchy from the backend
+  // Load both hierarchy and existing subscriptions
   useEffect(() => {
-    fetchObjectHierarchy();
-  }, []);
+    const loadInitialData = async () => {
+      try {
+        console.log(`🔄 Object Browser: Loading data for user ${currentUser.name} (${currentUser.id})`);
+        
+        // Reset states when user changes
+        setSubscriptionStatus({});
+        setExpandedNodes({});
+        setHierarchyData([]);
+        setExistingSubscriptions([]);
+        
+        // Load existing subscriptions first
+        const subscriptions = await getSubscriptions();
+        console.log(`📋 Found ${subscriptions.length} subscriptions for user ${currentUser.name}:`, subscriptions.map(s => s.path));
+        setExistingSubscriptions(subscriptions);
+        
+        // Update subscription status for existing subscriptions
+        const statusUpdates = {};
+        subscriptions.forEach(sub => {
+          statusUpdates[sub.path] = {
+            isSubscribed: true,
+            isDirect: true,
+            isInherited: false,
+            subscriptionId: sub.id,
+            includeChildren: sub.include_children ?? true,
+          };
+        });
+        
+        setSubscriptionStatus(statusUpdates);
+        
+        // Then load hierarchy
+        await fetchObjectHierarchy(subscriptions);
+        
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    };
+    
+    loadInitialData();
+  }, [currentUser.id, getSubscriptions]); // Add currentUser.id as dependency
+
+  const loadExistingSubscriptions = async () => {
+    try {
+      const subscriptions = await getSubscriptions();
+      setExistingSubscriptions(subscriptions);
+      
+      // Update subscription status for existing subscriptions
+      const statusUpdates = {};
+      subscriptions.forEach(sub => {
+        statusUpdates[sub.path] = {
+          isSubscribed: true,
+          isDirect: true,
+          isInherited: false,
+          subscriptionId: sub.id,
+          includeChildren: sub.include_children ?? true,
+        };
+      });
+      
+      setSubscriptionStatus(prev => ({
+        ...prev,
+        ...statusUpdates
+      }));
+      
+      return subscriptions;
+    } catch (error) {
+      console.error('Error loading existing subscriptions:', error);
+      return [];
+    }
+  };
   
-  const fetchObjectHierarchy = async () => {
+  const fetchObjectHierarchy = async (subscriptions = []) => {
     try {
       setHierarchyLoading(true);
       setHierarchyError(null);
@@ -36,11 +103,37 @@ function ObjectBrowser() {
         data.forEach(node => {
           topLevelExpanded[node.path] = true;
         });
-        setExpandedNodes(topLevelExpanded);
         
-        // Check subscription status for top-level nodes
-        const topLevelPaths = data.map(node => node.path);
-        checkSubscriptionStatusBatch(topLevelPaths);
+        // Also expand nodes that lead to existing subscriptions
+        const expandedWithSubscriptions = { ...topLevelExpanded };
+        subscriptions.forEach(sub => {
+          // Expand all parent paths of subscribed paths
+          const pathSegments = sub.path.split('/').filter(Boolean);
+          let currentPath = '';
+          pathSegments.forEach(segment => {
+            currentPath += '/' + segment;
+            expandedWithSubscriptions[currentPath] = true;
+          });
+        });
+        
+        setExpandedNodes(expandedWithSubscriptions);
+        
+        // Check subscription status for visible nodes
+        const allVisiblePaths = [...data.map(node => node.path)];
+        
+        // Add paths from existing subscriptions and their children
+        subscriptions.forEach(sub => {
+          allVisiblePaths.push(sub.path);
+          // Find node in the loaded data and add children
+          const node = findNodeByPath(sub.path, data);
+          if (node && node.children) {
+            node.children.forEach(child => allVisiblePaths.push(child.path));
+          }
+        });
+        
+        // Remove duplicates and check status
+        const uniquePaths = [...new Set(allVisiblePaths)];
+        checkSubscriptionStatusBatch(uniquePaths);
       }
     } catch (error) {
       console.error('Error fetching object hierarchy:', error);
@@ -68,7 +161,7 @@ function ObjectBrowser() {
   };
   
   // Find a node by path
-  const findNodeByPath = (targetPath) => {
+  const findNodeByPath = (targetPath, data = hierarchyData) => {
     const findNode = (nodes) => {
       for (const node of nodes) {
         if (node.path === targetPath) {
@@ -82,7 +175,7 @@ function ObjectBrowser() {
       return null;
     };
     
-    return findNode(hierarchyData);
+    return findNode(data);
   };
   
   // Check subscription status for multiple paths
@@ -175,7 +268,13 @@ function ObjectBrowser() {
     return (
       <div key={node.path} className="mb-2">
         <div 
-          className="p-2 border rounded object-item d-flex justify-content-between align-items-center"
+          className={`p-2 border rounded object-item d-flex justify-content-between align-items-center ${
+            status.isDirect 
+              ? 'border-primary bg-primary bg-opacity-10' 
+              : status.isInherited 
+                ? 'border-secondary bg-secondary bg-opacity-10' 
+                : 'border-light'
+          }`}
           style={{ marginLeft: `${level * 20}px` }}
         >
           <div className="d-flex align-items-center">
@@ -191,8 +290,16 @@ function ObjectBrowser() {
             
             {/* Object name */}
             <div>
-              <span className="me-2">{getPathName(node.path)}</span>
-              <small className="text-muted path-display">{node.path}</small>
+              <span className="me-2">
+                {status.isDirect && <FaBell className="text-primary me-1" size="0.8em" title="Direct subscription" />}
+                {status.isInherited && !status.isDirect && <FaBell className="text-secondary me-1" size="0.8em" title="Inherited subscription" />}
+                <strong className={status.isDirect ? 'text-primary' : status.isInherited ? 'text-secondary' : ''}>
+                  {getPathName(node.path)}
+                </strong>
+                {status.isDirect && <small className="badge bg-primary ms-1" title="Direct subscription">Direct</small>}
+                {status.isInherited && !status.isDirect && <small className="badge bg-secondary ms-1" title="Inherited subscription">Inherited</small>}
+              </span>
+              <small className="text-muted path-display d-block">{node.path}</small>
             </div>
           </div>
           
@@ -330,12 +437,35 @@ function ObjectBrowser() {
           <h5 className="mb-0">How subscriptions work</h5>
         </div>
         <div className="card-body">
-          <ul className="mb-0">
+          <ul className="mb-3">
             <li>Click <strong>Subscribe</strong> to subscribe directly to an object</li>
             <li>When you subscribe to a parent object, you automatically receive notifications for all child objects</li>
             <li>Objects with <strong>Inherited</strong> status are covered by a parent subscription</li>
             <li>You can't unsubscribe from inherited subscriptions directly (unsubscribe from the parent instead)</li>
           </ul>
+          
+          <div className="row">
+            <div className="col-md-4">
+              <div className="d-flex align-items-center mb-2">
+                <FaBell className="text-primary me-2" />
+                <span className="badge bg-primary me-2">Direct</span>
+                <small>Direct subscription</small>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="d-flex align-items-center mb-2">
+                <FaBell className="text-secondary me-2" />
+                <span className="badge bg-secondary me-2">Inherited</span>
+                <small>Inherited subscription</small>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="d-flex align-items-center mb-2">
+                <FaBellSlash className="text-muted me-2" />
+                <small>Not subscribed</small>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       

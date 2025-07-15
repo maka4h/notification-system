@@ -28,6 +28,20 @@ The system consists of five main components:
 - **System Monitoring**: View all system events for debugging and monitoring
 - **Responsive UI**: Modern React interface with Bootstrap styling and user selector
 - **Auto-refresh**: Real-time updates in the notification center and system log per user
+- **📄 Pagination & Performance**: Efficient handling of large notification datasets (3000+ notifications)
+- **🔄 Infinite Scroll**: Automatic loading of more notifications with "Load More" functionality
+- **📋 Bulk Operations**: Mark multiple notifications as read with enhanced performance
+- **🎯 Enhanced Object Browser**: Visual subscription indicators with proper user switching support
+
+## 🆕 Version 0.7.0 Highlights
+
+- **📄 Pagination System**: Efficient pagination for handling large notification datasets
+- **🔄 Infinite Scroll**: "Load More" functionality with automatic loading when scrolling
+- **📋 Bulk Operations**: Enhanced bulk mark-as-read and "Mark All Read" functionality
+- **🎯 Object Browser Improvements**: Proper subscription status display and user switching
+- **⚡ Performance Optimizations**: Resolved memory issues and infinite API call loops
+- **🐛 Critical Bug Fixes**: Fixed NATS connection management and Pydantic v2 compatibility
+- **🔧 Enhanced UX**: Better loading states, connection status indicators, and visual feedback
 
 ## 🆕 Version 0.6.0 Highlights
 

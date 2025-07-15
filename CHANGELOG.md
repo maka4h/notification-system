@@ -5,6 +5,55 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-07-15
+
+### Added
+- **Pagination Support**: Implemented efficient pagination for notifications to handle large datasets (3000+ notifications)
+- **Load More Functionality**: Added "Load More" button and automatic loading when scrolling near the bottom
+- **Bulk Operations**: Enhanced bulk mark-as-read functionality with improved performance
+- **Mark All as Read**: New "Mark All Read" button for quickly managing all unread notifications
+- **Infinite Scroll**: Automatic loading of more notifications when scrolling to the end
+- **Object Browser User Switching**: Object Browser now properly refreshes subscriptions when switching users
+- **Enhanced Visual Indicators**: Improved subscription status visibility with badges and color coding
+- **Performance Optimizations**: 
+  - Page size of 50 notifications per request
+  - Lazy loading prevents memory issues with large notification lists
+  - Efficient state management for pagination
+
+### Enhanced
+- **Notification Center**: Redesigned with scrollable container (70vh max height)
+- **Loading States**: Added loading indicators for "load more" operations
+- **User Experience**: Shows total notification count and "all loaded" indicator
+- **Context API**: Extended with pagination state management and bulk operations
+
+### Fixed
+- **Memory Issues**: Resolved problems when loading thousands of notifications
+- **Performance**: Eliminated lag when marking multiple notifications as read
+- **UI Responsiveness**: Improved interface responsiveness with large datasets
+- **NATS Connection Management**: Fixed resource exhaustion when switching users
+  - Proper cleanup of existing connections before creating new ones
+  - Added connection state tracking and timeout handling
+  - Improved error handling and reconnection logic
+  - Added request timeouts and abort controllers for API calls
+- **Object Browser Subscriptions**: Fixed issue where current subscriptions weren't visible when switching users
+  - Added proper user dependency tracking
+  - Enhanced subscription status loading and display
+  - Improved visual indicators for subscription states
+- **Frontend Infinite Loop**: Resolved infinite API calls when switching users
+  - Fixed circular dependencies in notification loading
+  - Implemented stable references using useRef for offset and filters
+  - Improved useEffect dependency management
+- **Backend Schema Compatibility**: Fixed Pydantic v2 compatibility issues
+  - Updated schemas to use `from_attributes = True` instead of `orm_mode = True`
+  - Replaced `from_orm()` with `model_validate()` for proper serialization
+  - Resolved subscription check API 500 errors
+
+### Technical Improvements
+- Extended `NotificationContext` with pagination state (`hasMore`, `currentOffset`, `loadingMore`)
+- Added `loadMoreNotifications()` and `bulkMarkAsRead()` functions
+- Implemented scroll-based infinite loading
+- Enhanced API calls with proper limit/offset parameters
+
 ## [0.6.0] - 2025-07-11
 
 ### Added

@@ -9,6 +9,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import Notification, NotificationSubscription, SeverityLevel, EventType
+from schemas import SubscriptionCheckResponse, SubscriptionResponse
 from app.repositories import (
     NotificationRepository,
     SubscriptionRepository,
@@ -291,8 +292,8 @@ class SubscriptionService:
         return SubscriptionCheckResponse(
             path=normalized_path,
             is_subscribed=direct_sub is not None or parent_sub is not None,
-            direct_subscription=direct_sub,
-            inherited_subscription=parent_sub
+            direct_subscription=SubscriptionResponse.model_validate(direct_sub) if direct_sub else None,
+            inherited_subscription=SubscriptionResponse.model_validate(parent_sub) if parent_sub else None
         )
     
     def _get_parent_paths(self, path: str) -> List[str]:

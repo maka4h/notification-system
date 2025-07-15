@@ -19,7 +19,7 @@ class SubscriptionResponse(BaseModel):
     settings: Optional[Dict[str, Any]] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Notification schemas
 class NotificationResponse(BaseModel):
@@ -38,7 +38,7 @@ class NotificationResponse(BaseModel):
     extra_data: Optional[Dict[str, Any]] = None  # Renamed from metadata
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Subscription check response
 class SubscriptionCheckResponse(BaseModel):
