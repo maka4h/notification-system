@@ -20,7 +20,7 @@ class Settings:
     
     # Application
     APP_NAME: str = "Hierarchical Notification Service API"
-    VERSION: str = "1.0.0"
+    VERSION: str = "0.8.0"
     
     # CORS
     ALLOWED_ORIGINS: list = ["*"]  # Update for production

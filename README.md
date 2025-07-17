@@ -33,6 +33,15 @@ The system consists of five main components:
 - **📋 Bulk Operations**: Mark multiple notifications as read with enhanced performance
 - **🎯 Enhanced Object Browser**: Visual subscription indicators with proper user switching support
 
+## 🆕 Version 0.8.0 Highlights
+
+- **📁 Project Organization**: Reorganized project structure with `scripts/` and `docs/` folders
+- **🧪 Test Infrastructure**: Added comprehensive test runner script with cleanup functionality
+- **📋 Enhanced Scripts**: All convenience scripts moved to `scripts/` folder with detailed documentation
+- **📚 Documentation**: Improved documentation structure and added comprehensive README files
+- **🧹 Clean Structure**: Streamlined root directory for better maintainability
+- **🔧 Development Tools**: Added `test.sh` script for running tests with optional cleanup and coverage
+
 ## 🆕 Version 0.7.0 Highlights
 
 - **📄 Pagination System**: Efficient pagination for handling large notification datasets
@@ -73,7 +82,34 @@ The system consists of five main components:
 - **Data Integrity**: Enhanced data consistency and referential integrity
 - **Clean Database Setup**: Fresh database setup with automated migration execution
 
-## 🚀 Quick Start
+## � Project Structure
+
+```
+notification-system/
+├── 📄 README.md                    # Main documentation
+├── � VERSION                      # Project version number
+├── �🐳 docker-compose.yml           # Docker services configuration
+├── 📦 package.json                 # Node.js workspace configuration
+├── 📋 scripts/                     # Convenience shell scripts
+│   ├── start.sh                    # Start all services
+│   ├── stop.sh                     # Stop all services
+│   ├── build.sh                    # Build Docker images
+│   ├── restart.sh                  # Complete restart
+│   ├── clean-restart.sh            # Clean restart (removes data)
+│   ├── status.sh                   # Check system status
+│   ├── logs.sh                     # View service logs
+│   └── create-zip.sh               # Create deployment archive
+├── 📚 docs/                        # Documentation files
+│   ├── CHANGELOG.md                # Version history and changes
+│   ├── DATABASE.md                 # Database schema documentation
+│   ├── NATS-CONNECTION-FIX.md      # NATS connection troubleshooting
+│   └── v0.7.0-ENHANCEMENTS.md      # Latest version improvements
+├── 🚀 notification-service/        # FastAPI backend
+├── 🖥️  demo-ui/                    # React frontend
+└── 🎲 event-generator/              # Event simulation service
+```
+
+## �🚀 Quick Start
 
 ### Prerequisites
 
@@ -88,29 +124,29 @@ The system consists of five main components:
    cd notification-system
    ```
 
-2. **Using the convenience scripts** (recommended):
+2. **Using the convenience scripts** (recommended, located in `scripts/` folder):
    ```bash
    # Start all services
-   ./start.sh
+   ./scripts/start.sh
    
    # Stop all services
-   ./stop.sh
+   ./scripts/stop.sh
    
    # Build fresh images
-   ./build.sh
+   ./scripts/build.sh
    
    # Complete restart (stop, build, start)
-   ./restart.sh
+   ./scripts/restart.sh
    
    # Clean restart (removes all data)
-   ./clean-restart.sh
+   ./scripts/clean-restart.sh
    
    # Check system status
-   ./status.sh
+   ./scripts/status.sh
    
    # View logs (all services or specific service)
-   ./logs.sh
-   ./logs.sh demo-ui
+   ./scripts/logs.sh
+   ./scripts/logs.sh demo-ui
    ```
 
 3. **Using Docker Compose directly**:
@@ -256,17 +292,18 @@ This feature enhances user experience by keeping users informed without interrup
 
 ## 🛠️ Convenience Scripts
 
-The project includes several shell scripts to make managing the Docker environment easier:
+The project includes several shell scripts in the `scripts/` folder to make managing the Docker environment easier:
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
-| `start.sh` | Start all services | `./start.sh` |
-| `stop.sh` | Stop all services | `./stop.sh` |
-| `build.sh` | Build Docker images | `./build.sh` |
-| `restart.sh` | Complete restart (stop, build, start) | `./restart.sh` |
-| `clean-restart.sh` | Clean restart (removes all data) | `./clean-restart.sh` |
-| `status.sh` | Check system status and health | `./status.sh` |
-| `logs.sh` | View service logs | `./logs.sh [service-name]` |
+| `start.sh` | Start all services | `./scripts/start.sh` |
+| `stop.sh` | Stop all services | `./scripts/stop.sh` |
+| `build.sh` | Build Docker images | `./scripts/build.sh` |
+| `restart.sh` | Complete restart (stop, build, start) | `./scripts/restart.sh` |
+| `clean-restart.sh` | Clean restart (removes all data) | `./scripts/clean-restart.sh` |
+| `status.sh` | Check system status and health | `./scripts/status.sh` |
+| `logs.sh` | View service logs | `./scripts/logs.sh [service-name]` |
+| `test.sh` | Run tests with optional cleanup | `./scripts/test.sh [--clean] [--coverage]` |
 
 ### Script Details:
 
@@ -617,6 +654,15 @@ docker logs notification-system-event-generator-1 --tail 10
 docker exec notification-system-postgres-1 pg_isready -U postgres
 ```
 
+## 📚 Documentation
+
+For detailed documentation, please refer to the `docs/` folder:
+
+- **[CHANGELOG.md](docs/CHANGELOG.md)** - Complete version history and changes
+- **[DATABASE.md](docs/DATABASE.md)** - Database schema and migration documentation  
+- **[NATS-CONNECTION-FIX.md](docs/NATS-CONNECTION-FIX.md)** - NATS connection troubleshooting guide
+- **[v0.7.0-ENHANCEMENTS.md](docs/v0.7.0-ENHANCEMENTS.md)** - Latest version improvements and features
+
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:
@@ -635,7 +681,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🏷️ Version History
 
-See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+See [docs/CHANGELOG.md](docs/CHANGELOG.md) for detailed version history.
 
 ## 🙏 Acknowledgments
 

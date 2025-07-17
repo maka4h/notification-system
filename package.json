@@ -1,7 +1,7 @@
 {
   "name": "notification-system",
-  "version": "0.7.0",
-  "description": "Scalable notification system with pagination and bulk operations",
+  "version": "0.8.0",
+  "description": "Scalable notification system with enhanced project organization and testing",
   "dependencies": {
     "nats.ws": "^1.30.3"
   }

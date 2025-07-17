@@ -85,3 +85,15 @@ Thumbs.db
 # Test databases (if any)
 test_*.db
 *test*.sqlite3
+
+# Test artifacts and reports
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+test-results.xml
+junit.xml
+coverage/
+
+# Jest cache
+.cache/
