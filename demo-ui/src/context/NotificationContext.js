@@ -38,6 +38,23 @@ export function NotificationProvider({ children }) {
   const PAGE_SIZE = 50; // Default page size
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
   
+  // Function to fetch unread count from API
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/notifications/count`, {
+        params: {
+          user_id: currentUser.id,
+          is_read: false // Only get unread count
+        },
+        timeout: 5000
+      });
+      return response.data.count;
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      return 0;
+    }
+  }, [currentUser.id, API_URL]);
+
   // Simple, stable fetch function
   const fetchNotifications = useCallback(async (filters = {}, reset = true) => {
     console.log(`🔍 fetchNotifications called for ${currentUser.name}, reset: ${reset}, filters:`, filters);
@@ -87,8 +104,9 @@ export function NotificationProvider({ children }) {
       setHasMore(response.data.length === PAGE_SIZE);
       
       if (reset) {
-        const unread = response.data.filter(n => !n.is_read).length;
-        setUnreadCount(unread);
+        // Fetch the real unread count from the API instead of counting loaded notifications
+        const unreadCount = await fetchUnreadCount();
+        setUnreadCount(unreadCount);
       }
       
       setLoading(false);
@@ -167,8 +185,9 @@ export function NotificationProvider({ children }) {
           setNotifications(response.data);
           setHasMore(response.data.length === PAGE_SIZE);
           
-          const unread = response.data.filter(n => !n.is_read).length;
-          setUnreadCount(unread);
+          // Fetch the real unread count from the API instead of counting loaded notifications
+          const unreadCount = await fetchUnreadCount();
+          setUnreadCount(unreadCount);
           setLoading(false);
         } catch (error) {
           if (error.name === 'AbortError') {

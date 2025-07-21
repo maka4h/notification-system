@@ -105,6 +105,15 @@ class NotificationService:
         """Mark a notification as read"""
         return await self.notification_repo.mark_as_read(notification_id, user_id)
     
+    async def get_notification_count(
+        self,
+        user_id: str,
+        **filters
+    ) -> Dict[str, int]:
+        """Get notification count for a user with filtering"""
+        count = await self.notification_repo.get_count_by_user_id(user_id, **filters)
+        return {"count": count}
+    
     async def bulk_mark_as_read(
         self, 
         request: BulkMarkAsReadRequest, 

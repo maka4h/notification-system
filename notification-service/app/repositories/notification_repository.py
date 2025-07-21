@@ -106,6 +106,45 @@ class NotificationRepository:
         result = await self.session.execute(query.offset(offset).limit(limit))
         return result.scalars().all()
     
+    async def get_count_by_user_id(
+        self, 
+        user_id: str,
+        **filters
+    ) -> int:
+        """Get count of notifications for a user with optional filters"""
+        from sqlalchemy import func
+        
+        query = (
+            select(func.count(Notification.id))
+            .filter(Notification.user_id == user_id)
+        )
+        
+        # Apply the same filters as get_by_user_id
+        if filters.get('path'):
+            query = query.filter(Notification.object_path == filters['path'])
+        if filters.get('event_type'):
+            query = query.filter(Notification.type == filters['event_type'])
+        if filters.get('severity'):
+            query = query.filter(Notification.severity == filters['severity'])
+        if filters.get('from_date'):
+            query = query.filter(Notification.timestamp >= filters['from_date'])
+        if filters.get('to_date'):
+            query = query.filter(Notification.timestamp <= filters['to_date'])
+        if filters.get('is_read') is not None:
+            query = query.filter(Notification.is_read == filters['is_read'])
+        if filters.get('search'):
+            from sqlalchemy import or_
+            search_pattern = f"%{filters['search']}%"
+            query = query.filter(
+                or_(
+                    Notification.title.ilike(search_pattern),
+                    Notification.content.ilike(search_pattern),
+                )
+            )
+        
+        result = await self.session.execute(query)
+        return result.scalar() or 0
+    
     async def get_by_id(self, notification_id: str, user_id: str) -> Optional[Notification]:
         """Get notification by ID for a specific user"""
         result = await self.session.execute(

@@ -5,6 +5,21 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-07-21
+
+### Fixed
+- **Unread Count Bug**: Fixed issue where unread notification count was incorrectly limited to page size (50) instead of showing the true total count after user switching
+- **Notification Count Display**: Removed "99+" cap in notification dropdown, now displays actual count regardless of size
+- **User Switching**: Ensured unread count persists correctly when switching between users by fetching from backend API
+
+### Added
+- **Notification Count API**: Added `/notifications/count` endpoint to return total notification count with optional filtering
+- **Backend Service Method**: Added `get_notification_count` method in NotificationService for accurate count retrieval
+
+### Enhanced
+- **Frontend Count Logic**: Updated NotificationContext to fetch unread count from API instead of calculating from loaded notifications
+- **Real Count Display**: Bell icon now shows true notification count (e.g., 187) instead of capping at 99+
+
 ## [0.7.0] - 2025-07-15
 
 ### Added

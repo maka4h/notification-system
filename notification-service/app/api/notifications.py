@@ -108,3 +108,28 @@ async def bulk_mark_as_read(
         return await service.bulk_mark_as_read(request, user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get(
+    "/count", 
+    summary="Get notification count",
+    description="Get the total count of notifications for the current user, optionally filtered by read status",
+)
+async def get_notification_count(
+    user_id: str = Depends(get_current_user_id),
+    is_read: Optional[bool] = Query(None, description="Filter by read status (true for read, false for unread)"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get the total count of notifications for the current user.
+    
+    This endpoint returns the total count of notifications for the user,
+    optionally filtered by read status to get unread count.
+    """
+    service = NotificationService(db)
+    
+    filters = {}
+    if is_read is not None:
+        filters['is_read'] = is_read
+    
+    return await service.get_notification_count(user_id, **filters)
