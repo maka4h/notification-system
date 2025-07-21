@@ -1,7 +1,7 @@
 """Add configuration tables for severity levels and event types
 
 Revision ID: 0001_add_configuration_tables
-Revises: 09129a278f19
+Revises: 
 Create Date: 2025-07-10 15:46:00.000000
 
 """
@@ -11,7 +11,7 @@ from datetime import datetime
 
 # revision identifiers, used by Alembic.
 revision = '0001_add_configuration_tables'
-down_revision = None  # This is now the first migration
+down_revision = None  # This is the first migration
 branch_labels = None
 depends_on = None
 

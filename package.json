@@ -1,6 +1,6 @@
 {
   "name": "notification-system",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "Scalable notification system with enhanced project organization and testing",
   "dependencies": {
     "nats.ws": "^1.30.3"
