@@ -35,6 +35,7 @@ services:
 
   # Notification service
   notification-service:
+    container_name: notification-service
     build:
       context: ./notification-service
       dockerfile: Dockerfile
@@ -55,6 +56,7 @@ services:
 
   # Demo UI
   demo-ui:
+    container_name: notification-ui
     build:
       context: ./demo-ui
       dockerfile: Dockerfile
@@ -70,12 +72,16 @@ services:
 
   # Event generator for testing
   event-generator:
+    container_name: notification-generator
     build:
       context: ./event-generator
       dockerfile: Dockerfile
     environment:
       NATS_URL: nats://nats:4222
       GENERATE_INTERVAL: 5
+      CONFIG_FILE: /app/config.json
+    volumes:
+      - ./event-generator/config.json:/app/config.json:ro
     depends_on:
       - nats
     networks:

@@ -8,7 +8,6 @@ from datetime import datetime
 import uuid
 
 import nats
-from nats.js.api import StreamConfig
 
 # Configure logging
 logging.basicConfig(
@@ -19,53 +18,34 @@ logger = logging.getLogger("event-generator")
 
 # Environment variables
 NATS_URL = os.environ.get("NATS_URL", "nats://nats:4222")
-GENERATE_INTERVAL = int(os.environ.get("GENERATE_INTERVAL", "5"))  # seconds
+CONFIG_FILE = os.environ.get("CONFIG_FILE", "/app/config.json")
 
-# Sample hierarchical structure for demo
-HIERARCHICAL_PATHS = [
-    # Projects
-    "/projects/project-a",
-    "/projects/project-a/tasks/task-1",
-    "/projects/project-a/tasks/task-2",
-    "/projects/project-a/documents/doc-1",
-    "/projects/project-b",
-    "/projects/project-b/tasks/task-3",
-    # Departments
-    "/departments/engineering",
-    "/departments/engineering/teams/frontend",
-    "/departments/engineering/teams/backend",
-    "/departments/marketing",
-    # Resources
-    "/resources/servers/web-1",
-    "/resources/servers/db-1",
-    "/resources/databases/users-db",
-    # Products
-    "/products/widgets/widget-a",
-    "/products/widgets/widget-b",
-    "/products/gadgets/gadget-x",
-]
+def load_config():
+    """Load configuration from JSON file"""
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            config = json.load(f)
+        logger.info(f"Loaded configuration from {CONFIG_FILE}")
+        logger.info(f"Found {len(config.get('hierarchical_paths', []))} paths, {len(config.get('event_types', []))} event types, {len(config.get('users', []))} users")
+        return config
+    except FileNotFoundError:
+        logger.error(f"Configuration file not found: {CONFIG_FILE}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in configuration file: {e}")
+        return None
 
-# Event types
-EVENT_TYPES = [
-    "created",
-    "updated",
-    "deleted",
-    "commented",
-    "status_changed",
-    "assigned",
-    "completed",
-    "error",
-    "warning",
-]
+# Load configuration
+config = load_config()
+if not config:
+    logger.error("Failed to load configuration. Exiting.")
+    exit(1)
 
-# Sample users for events (matching frontend users)
-USERS = [
-    {"id": "user123", "name": "Alice Johnson"},
-    {"id": "user456", "name": "Bob Smith"},
-    {"id": "user789", "name": "Carol Davis"},
-    {"id": "user000", "name": "David Wilson"},
-    {"id": "user111", "name": "Emma Brown"},
-]
+# Extract configuration values
+HIERARCHICAL_PATHS = config.get("hierarchical_paths", [])
+EVENT_TYPES = config.get("event_types", [])
+USERS = config.get("users", [])
+GENERATE_INTERVAL = config.get("settings", {}).get("generate_interval", 5)
 
 async def generate_random_event(nc):
     """Generate a random event and publish it to NATS"""
@@ -125,7 +105,7 @@ async def generate_random_event(nc):
 
 async def run_generator():
     # Connect to NATS
-    nc = await nats.connect(NATS_URL)
+    nc = await nats.connect(servers=[NATS_URL])
     js = nc.jetstream()
     
     logger.info(f"Connected to NATS at {NATS_URL}")
@@ -140,8 +120,10 @@ async def run_generator():
     # Generate events periodically
     try:
         # Generate initial set of events
-        logger.info("Generating initial events...")
-        for _ in range(10):
+        settings = config.get("settings", {}) if config else {}
+        initial_events = settings.get("initial_events", 10)
+        logger.info(f"Generating {initial_events} initial events...")
+        for _ in range(initial_events):
             await generate_random_event(nc)
         
         # Generate events periodically

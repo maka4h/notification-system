@@ -5,6 +5,26 @@ All notable changes to the Notification System project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-07-22
+
+### Added
+- **External Configuration for Event Generator**: Event generator now loads configuration from external `config.json` file
+- **Docker Volume Mount**: Added volume mount in docker-compose.yml to override event generator configuration without rebuilding
+- **Configurable Hierarchical Paths**: Teams can now define custom object paths in config.json for their specific use cases
+- **Configurable Event Types**: Event types are now externally configurable (created, updated, deleted, commented, etc.)
+- **Configurable Users**: Test users are now defined in external configuration for team flexibility
+- **Configurable Settings**: Generation interval and initial event count are now configurable via external file
+
+### Enhanced
+- **Team Collaboration**: Other teams can now easily use the event generator with their own objects and event types
+- **Configuration Flexibility**: No need to rebuild Docker images when changing event generation parameters
+- **Environment Variable Support**: Added CONFIG_FILE environment variable for flexible configuration file location
+
+### Technical
+- **External Config Loading**: Event generator reads from `/app/config.json` by default, configurable via CONFIG_FILE env var
+- **Docker Integration**: Configuration file is mounted as read-only volume in docker-compose.yml
+- **Backward Compatibility**: System gracefully handles missing or invalid configuration files
+
 ## [1.0.1] - 2025-07-21
 
 ### Fixed

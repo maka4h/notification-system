@@ -1,0 +1,45 @@
+{
+  "hierarchical_paths": [
+    "/camil/bark",
+    "camil/sleep",
+    "camil/eat",
+    "/projects/project-a",
+    "/projects/project-a/tasks/task-1",
+    "/projects/project-a/tasks/task-2",
+    "/projects/project-a/documents/doc-1",
+    "/projects/project-b",
+    "/projects/project-b/tasks/task-3",
+    "/departments/engineering",
+    "/departments/engineering/teams/frontend", 
+    "/departments/engineering/teams/backend",
+    "/departments/marketing",
+    "/resources/servers/web-1",
+    "/resources/servers/db-1",
+    "/resources/databases/users-db",
+    "/products/widgets/widget-a",
+    "/products/widgets/widget-b",
+    "/products/gadgets/gadget-x"
+  ],
+  "event_types": [
+    "created",
+    "updated", 
+    "deleted",
+    "commented",
+    "status_changed",
+    "assigned",
+    "completed",
+    "error",
+    "warning"
+  ],
+  "users": [
+    {"id": "user123", "name": "Alice Johnson"},
+    {"id": "user456", "name": "Bob Smith"},
+    {"id": "user789", "name": "Carol Davis"},
+    {"id": "user000", "name": "David Wilson"},
+    {"id": "user111", "name": "Emma Brown"}
+  ],
+  "settings": {
+    "generate_interval": 5,
+    "initial_events": 10
+  }
+}
