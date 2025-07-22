@@ -1,8 +1,8 @@
 {
   "hierarchical_paths": [
     "/camil/bark",
-    "camil/sleep",
-    "camil/eat",
+    "/camil/sleep",
+    "/camil/eat",
     "/projects/project-a",
     "/projects/project-a/tasks/task-1",
     "/projects/project-a/tasks/task-2",
